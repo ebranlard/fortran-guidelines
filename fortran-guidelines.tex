@@ -1,0 +1,173 @@
+\documentclass{report} 
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings} % a inclure pour la fonction listing
+\usepackage{longtable}
+\usepackage{geometry}
+\usepackage{ifpdf}
+\ifpdf
+	\usepackage{graphicx}
+	\usepackage{epstopdf} %don't forget the shell-escape flag for pdflatex
+\else
+	\usepackage{graphicx}
+\fi
+\usepackage{hyperref}
+\usepackage{color} 
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{gret}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{orange}{rgb}{1,0.5,0}
+\definecolor{grey}{rgb}{0.88,0.88,0.88}
+\definecolor{midgrey}{rgb}{0.5,0.5,0.50}
+\definecolor{greylight}{rgb}{0.95,0.95,0.95}
+\definecolor{greensoft}{rgb}{0.25,0.95,0.25}
+%%for dtu
+\definecolor{dtured}{rgb}{0.6706,0.20784,0.227451}
+\definecolor{dtugrey}{rgb}{0.5,0.5,0.5}
+
+
+% --------------------------------------------------------------------------------
+% --- Code 
+% --------------------------------------------------------------------------------
+\newcommand{\basiclstset}{%
+\lstset{ %
+  backgroundcolor=\color{white},   % choose the background color; 
+  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  commentstyle=\color{mygreen},    % comment style
+  deletekeywords={...},            % if you want to delete keywords from the given language
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+%   frame=single,	                   % adds a frame around the code
+%   keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  language=Fortran,                 % the language of the code
+  otherkeywords={bind},            % if you want to add more keywords to the set
+%   numbersep=5pt,                   % how far the line-numbers are from the code
+%   numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+%   stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{mymauve},     % string literal style
+%   tabsize=2,	                   % sets default tabsize to 2 spaces
+%   title=\lstname,                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+%   belowskip=-2.0 \baselineskip,
+%   belowcaptionskip=0cm,
+%   aboveskip=0cm,
+%    belowskip=3em,
+% linewidth=\linewidth
+}
+}
+
+
+% --------------------------------------------------------------------------------
+% ---  
+% --------------------------------------------------------------------------------
+\lstloadlanguages{Fortran}
+\lstnewenvironment{code}
+{\minipage{0.49\textwidth}}
+    {\endminipage}
+\lstnewenvironment{codefull}
+{\minipage{1.0\textwidth}}
+    {\endminipage}
+
+\lstnewenvironment{good}
+{\hfill\minipage{0.47\textwidth}\lstset{title=\textbf{good}}}
+    {\endminipage\hfill\null}
+\lstnewenvironment{bad}
+{\hfill\minipage{0.47\textwidth}\lstset{title=\textbf{bad}}}
+    {\endminipage\hfill\null}
+% --------------------------------------------------------------------------------
+% --- Personal commands 
+% --------------------------------------------------------------------------------
+\newcommand{\weird}[1]{\textcolor{red}{!!!#1 }}
+
+\newcommand{\topic}[1]{%
+   \multicolumn{2}{p{\textwidth}}{\newline\textbf{#1}}\\
+}
+\newcommand{\reason}[1]{%
+    \multicolumn{2}{p{\textwidth}}{#1}\\
+}
+
+% --------------------------------------------------------------------------------
+% --- Document 
+% --------------------------------------------------------------------------------
+\begin{document}
+\basiclstset
+
+% --------------------------------------------------------------------------------
+% ---  Precision
+% --------------------------------------------------------------------------------
+\section*{Precision}
+% --------------------------------------------------------------------------------
+% ---  
+% --------------------------------------------------------------------------------
+\begin{longtable}{p{0.5\linewidth}p{0.5\linewidth}}
+% \hline
+%     \textbf{Don't use}& \textbf{Use}\\
+% --------------------------------------------------------------------------------
+\topic{Precision: in general, use a custom module}
+\begin{code}
+
+    real*4, real*8, 
+    integer(int_ptr_kind())
+\end{code} &
+\begin{code}
+    use SupportPrecision
+    real(SP), real(DP)
+    integer(PTRK)
+
+\end{code}\\
+% --------------------------------------------------------------------------------
+\topic{Precision: If you really want to precise the size in bytes (8 bit)}
+\begin{code}
+
+    real*4, real*8, 
+    integer*4, integer*8
+\end{code} &
+\begin{code}
+    use iso_fortran_env
+    real(REAL32), real(REAL64)
+    integer(INT32), real(INT64)
+\end{code}\\
+\reason{Note: the syntax is non-standard and depreciated. The iso-c-binding module is FORTRAN 2003 and not available on old compilers => Use a SupportCompiler module} 
+% --------------------------------------------------------------------------------
+\topic{Precision: If you need to communicate with C (recommended for DLLs)}
+\begin{code}
+
+    real
+    double precision
+    integer
+    character
+    logical
+\end{code} &
+\begin{code}
+    use iso_c_binding
+    real(C_FLOAT)
+    real(C_DOUBLE)
+    integer(C_INT)
+    character(kind=C_CHAR)
+    logical(C_BOOL)
+\end{code}\\
+\reason{Note: the syntax is non-standard and depreciated. The iso-fortran-env module is not available on old compilers => Use a SupportCompiler module} 
+% --------------------------------------------------------------------------------
+\end{longtable}
+
+
+Summary
+\begin{codefull}
+\end{codefull}
+
+
+
+
+
+
+
+\end{document}
