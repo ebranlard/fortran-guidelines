@@ -1,185 +1,666 @@
-\documentclass{report} 
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{listings} % a inclure pour la fonction listing
-\usepackage{longtable}
-\usepackage{geometry}
-\usepackage{ifpdf}
-\ifpdf
-	\usepackage{graphicx}
-	\usepackage{epstopdf} %don't forget the shell-escape flag for pdflatex
-\else
-	\usepackage{graphicx}
-\fi
-\usepackage{hyperref}
-\usepackage{color} 
-\definecolor{mygreen}{rgb}{0,0.6,0}
-\definecolor{gret}{rgb}{0,0.6,0}
-\definecolor{mygray}{rgb}{0.5,0.5,0.5}
-\definecolor{mymauve}{rgb}{0.58,0,0.82}
-\definecolor{orange}{rgb}{1,0.5,0}
-\definecolor{grey}{rgb}{0.88,0.88,0.88}
-\definecolor{midgrey}{rgb}{0.5,0.5,0.50}
-\definecolor{greylight}{rgb}{0.95,0.95,0.95}
-\definecolor{greensoft}{rgb}{0.25,0.95,0.25}
-%%for dtu
-\definecolor{dtured}{rgb}{0.6706,0.20784,0.227451}
-\definecolor{dtugrey}{rgb}{0.5,0.5,0.5}
-
-
-% --------------------------------------------------------------------------------
-% --- Code 
-% --------------------------------------------------------------------------------
-\newcommand{\basiclstset}{%
-\lstset{ %
-  backgroundcolor=\color{white},   % choose the background color; 
-  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
-  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
-  breaklines=true,                 % sets automatic line breaking
-  commentstyle=\color{mygreen},    % comment style
-  deletekeywords={...},            % if you want to delete keywords from the given language
-  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
-  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
-%   frame=single,	                   % adds a frame around the code
-%   keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
-  keywordstyle=\color{blue},       % keyword style
-  language=Fortran,                 % the language of the code
-  otherkeywords={},            % if you want to add more keywords to the set
-%   numbersep=5pt,                   % how far the line-numbers are from the code
-%   numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
-  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
-  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
-  showstringspaces=false,          % underline spaces within strings only
-  showtabs=false,                  % show tabs within strings adding particular underscores
-%   stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
-  stringstyle=\color{mymauve},     % string literal style
-%   tabsize=2,	                   % sets default tabsize to 2 spaces
-%   title=\lstname,                   % show the filename of files included with \lstinputlisting; also try caption instead of title
-%   belowskip=-2.0 \baselineskip,
-%   belowcaptionskip=0cm,
-%   aboveskip=0cm,
-%    belowskip=3em,
-% linewidth=\linewidth
-}
-}
-
-
-% --------------------------------------------------------------------------------
-% ---  
-% --------------------------------------------------------------------------------
-\lstloadlanguages{Fortran}
-\lstnewenvironment{code}
-{\minipage{0.49\textwidth}}
-    {\endminipage}
-\lstnewenvironment{codefull}
-{\minipage{1.0\textwidth}}
-    {\endminipage}
-
-\lstnewenvironment{good}
-{\hfill\minipage{0.47\textwidth}\lstset{title=\textbf{good}}}
-    {\endminipage\hfill\null}
-\lstnewenvironment{bad}
-{\hfill\minipage{0.47\textwidth}\lstset{title=\textbf{bad}}}
-    {\endminipage\hfill\null}
-% --------------------------------------------------------------------------------
-% --- Personal commands 
-% --------------------------------------------------------------------------------
-\newcommand{\weird}[1]{\textcolor{red}{!!!#1 }}
-
-\newcommand{\topic}[1]{%
-   \multicolumn{2}{p{\textwidth}}{\newline\textbf{#1}}\\
-}
-\newcommand{\reason}[1]{%
-    \multicolumn{2}{p{\textwidth}}{#1}\\
-}
-
+\documentclass{article} 
+\input{_preamble.tex}
+\title{Some Fortran guidelines and pitfall}
 % --------------------------------------------------------------------------------
 % --- Document 
 % --------------------------------------------------------------------------------
 \begin{document}
-\basiclstset
+\maketitle
+\tableofcontents
+\section{Recommendations}
+\subsection{Portability Portability Portability}
+Code that is - \textit{none standards, platform-dependent, architecture-dependent, compiler-dependent, library-dependent}
+should always be wrapped into a separate module. Different files can then used to provide the differerent implementations of this module, all with the same interface.
 
-% --------------------------------------------------------------------------------
-% ---  Precision
-% --------------------------------------------------------------------------------
-\section*{Precision}
-% --------------------------------------------------------------------------------
-% ---  
-% --------------------------------------------------------------------------------
-\begin{longtable}{p{0.5\linewidth}p{0.5\linewidth}}
-% \hline
-%     \textbf{Don't use}& \textbf{Use}\\
-% --------------------------------------------------------------------------------
-\topic{Precision: in general, use a custom module}
-\begin{code}
-
-    real*4, real*8, 
-    integer(int_ptr_kind())
-\end{code} &
-\begin{code}
-    use SupportPrecision
-    real(SP), real(DP)
-    integer(PTRK)
-
-\end{code}\\
-% --------------------------------------------------------------------------------
-\topic{Precision: If you really want to precise the size in bytes (8 bit)}
-\begin{code}
-
-    real*4, real*8, 
-    integer*4, integer*8
-\end{code} &
-\begin{code}
-    use iso_fortran_env
-    real(REAL32), real(REAL64)
-    integer(INT32), real(INT64)
-\end{code}\\
-\reason{Note: the syntax is non-standard and depreciated. The iso-c-binding module is FORTRAN 2003 and not available on old compilers => Use a SupportCompiler module} 
-% --------------------------------------------------------------------------------
-\topic{Precision: If you need to communicate with C (recommended for DLLs)}
-\begin{code}
-
-    real
-    double precision
-    integer
-    character
-    logical
-\end{code} &
-\begin{code}
-    use iso_c_binding
-    real(C_FLOAT)
-    real(C_DOUBLE)
-    integer(C_INT)
-    character(kind=C_CHAR)
-    logical(C_BOOL)
-\end{code}\\
-\reason{Note: the syntax is non-standard and depreciated. The iso-fortran-env module is not available on old compilers => Use a SupportCompiler module} 
-% --------------------------------------------------------------------------------
-\end{longtable}
+In this document, we use modules \verb|Support*| for the portability modules.
+In particular the real kind is stored as \verb|MK| in the \verb|SupportPrecision| module (see \autoref{sec:precision}).
 
 
-Summary\\
+
+
+% --------------------------------------------------------------------------------
+% --- Files
+% --------------------------------------------------------------------------------
+\subsection{Files and modules: towards a modular library-oriented code}
+\topic{Files and modules: general guidelines}
+\begin{enumerate}
+    \item Modules containing derived types definitions should not contain anything else: no data or routines (though parameters/constants can be fine).  This seriously reduces the chances to run into circular dependencies problems. 
+    \item Modules containing data should only contain this data: no types or routines. This reduces circular dependencies problems. This helps the identification of the data ``stored'' by the librairies. In fact, it's best not to have data modules at all (see next point).
+    \item Data modules should be avoided. In a ``library''-like implementation, the ``user'' owns the data, not the library. The library is made of tools that manipulate the user's data but does not store anything. This makes the library thread safe and the code implemented can be more readily re-used.
+    \item Use one module per files, it makes it easier to find them and reduces circular dependencies problem.
+    \item The following structure can be adopted:
+        \begin{itemize}
+            \item \verb|AirfoilTypes.f90|  (contains no data)
+            \item \verb|AirfoilParams.f90| (contains compile time constants, e.g. to increase code readibility)
+            \item \verb|AirfoilTools.f90|  (contains no data, manipulate derive type instances as arguments)
+            \item \verb|AirfoilData.f90| (fine, but the aim is to remove this module at the end, see point 3 above)
+        \end{itemize}
+    \item Extensions: Windows users, please be aware of the case (always display extension in your file manager!). It's good to stay consistent in your program, it helps creating makefiles that can be used on any platforms. Some general conventions are:
+        \begin{itemize}
+            \item \verb|.f90|: Fortran 90 code
+            \item \verb|.f|  : Old fortran code
+            \item \verb|.F*|  : Fortran code that needs a preprocessor
+        \end{itemize}
+    \item Avoid having two files with the same name in your project. It's easier to implement makefiles then.
+\end{enumerate}
+
+\topic{Modules: use implicit none, it propagates to contained routines}
 \begin{codefull}
-module SupportPrecision
-  ! Compiler interface to iso_c_binding
-  use SupportCompiler, only: C_FLOAT, C_DOUBLE, C_CHAR, C_INT, C_BOOL
-  ! Compiler interface to iso_fortran_env
-  use SupportCompiler, only: REAL32, REAL64, INT32, INT64
-  ! Compiler interface to int_ptr_kind
-  use SupportCompiler, only: IPTRK
-  !
-  integer, parameter :: SP = REAL32
-  integer, parameter :: DP = REAL64
-  integer, parameter :: MK = C_DOUBLE
-end module
+module SupportCompiler
+  implicit none
+end module 
+\end{codefull}
+
+\topic{Modules: make explicit use statements to avoid polluting your scope and help the reader}
+\begin{codefull}
+subroutine foo()
+  use SupportCompiler, only: FORTRAN_COMPILER
+  use AirfoilTools, only: airfoil_load, airfoil_interp
+  use NewTools, only: init             ! using    the subroutine init from NewTools
+  use OldTools, only: init_old => init ! renaming the subroutine init from OldTools
+  ![...]
+  call init()
+  call init_old()
+  ![...]
+end subroutine 
 \end{codefull}
 
 
 
 
+% --------------------------------------------------------------------------------
+% --- Variables init
+% --------------------------------------------------------------------------------
+\subsection{Declarations, initialization, allocations}
+\topic{Initialization: Not in definitions, but straight after (except for derived types, see~\autoref{sec:derivedtypes})} 
+\begin{codea}
+subroutine foo()
+  integer :: i = 0 !< implies save, bad!
+  real(MK), pointer :: p=>null() !< idem
+   
 
+end subroutine 
+\end{codea} 
+\begin{codeb}
+subroutine foo()
+  integer :: i
+  real(MK), pointer :: p
+  i=0        ! safe
+  nullify(p) ! safe
+end subroutine 
+\end{codeb}
+\reason{Save is in general a bad practice. Note: hawc2-intel is compiled with the -save flag by default! This has to change.} 
+% --------------------------------------------------------------------------------
+\topic{Arguments declaration: use intent, except for pointers}
+\begin{codea}
+function(x,y,i,p)
+  ! Arguments
+  real(MK) :: x !<
+  real(MK) :: y !<
+  integer  :: i !<
+  integer, pointer :: p !<
+  ! Variables
+end
+\end{codea} 
+\begin{codeb}
+function(x,y,i,p)
+  ! Arguments
+  real(MK), intent(in)   :: x !< best
+  real(MK), intent(out)  :: y !< best
+  integer, intent(inout) :: i !< best
+  integer, pointer :: p
+  ! Variables
+end
+\end{codeb}
+\reason{More compiler optimizations can take place and errors detected at compilation time.}
+% --------------------------------------------------------------------------------
+\topic{Initialization: after allocate}
+\begin{codea}
+allocate(x(1:10));! x is garbage
+\end{codea} 
+\begin{codeb}
+allocate(x(1:10)); x(1:10)= 0.0_MK ! safe
+\end{codeb}
+\reason{Compilers have flags to define the behavior of allocate (e.g. set to 0 or NaN). It's more portable not to rely on it.}
+% --------------------------------------------------------------------------------
+\topic{Allocations: the safe way}
+\begin{codea}
+allocate(x(1:10));
+! Code above can crash with no backtrace
+x=0.0_MK
+
+
+! 
+! 
+\end{codea} 
+\begin{codeb}
+allocate(x(1:10),stat=ierr); 
+if (ierr/=0) print*,'x alloc error'; STOP
+x=0.0_MK
+
+! or, using a wrapped function:
+use MemoryManager, only: allocate_safe
+call allocate_safe('x', x, 10, 0.0_MK)
+\end{codeb}
+
+
+\subsection{Stack pitfalls}
+% --------------------------------------------------------------------------------
+\topic{Stack: Do not used assumed size local variable in routines}
+\begin{codea}
+function(x,n)
+! Arguments
+integer,intent(in) :: n
+real(MK),dimension(n),intent(inout) :: x !< ok
+! Variables
+real(MK), dimension(n) :: y !< BAD!
+
+end
+\end{codea} 
+\begin{codeb}
+function(x,n)
+! Arguments
+integer,intent(in) :: n
+real(MK),dimension(n),intent(inout) :: x !< ok
+! Variables
+real(MK), dimension(:), allocatable :: y !< OK
+allocate(y(1:n)); y(1:n)= 0.0_MK         !< OK
+end
+\end{codeb}
+\reason{The assumed size local variables are allocated on the stack and this might result in stack overflows or corruptions.}
+% --------------------------------------------------------------------------------
+\topic{Stack: do not use intrinsic functions for large arrays/vectors}
+\begin{codea}
+maxval
+maxloc
+pack
+\end{codea} 
+\begin{codeb}
+!
+! Use for loops / customized user functions
+!
+\end{codeb}
+\reason{Segmentation faults can result from not following this guideline.}
+% --------------------------------------------------------------------------------
+\topic{Stack: linux systems}
+\begin{codea}
+\end{codea} 
+\begin{codeb}
+ulimit -s unlimited
+\end{codeb}
+% \reason{Segmentation faults can result from not following this guideline.}
+% --------------------------------------------------------------------------------
+
+
+% --------------------------------------------------------------------------------
+% --- If statements
+% --------------------------------------------------------------------------------
+\subsection{If-statements / comparisons}
+\label{sec:if}
+\topic{If-statements: logical comparison}
+\begin{codea}
+if(my_logical.eq.your_logical) print*,'bad'
+if(my_logical.eq..true.) print*,'bad'
+if(my_logical.eq..false.) print*,'bad'
+\end{codea} 
+\begin{codeb}
+if(my_logical.eqv.your_logical.) print*,'good'
+if(my_logical) print*,'good'
+if(.not.my_logical) print*,'good'
+\end{codeb}
+% --------------------------------------------------------------------------------
+\topic{If-statements: real equality comparison}
+\begin{codea}
+if(x == 12.0_MK) ! dangerous real comparison
+
+
+
+!
+\end{codea} 
+\begin{codeb}
+if(.not.(abs(x-12.0_MK)>0.0_MK))     ! ex1
+!
+if(precision_equal(x,12.0_MK))       ! ex1b
+!
+if(abs(x-12.0_MK)<precision(1.0_MK)) ! ex2
+!
+\end{codeb}
+\reason{In the above, ex1 is not so readable.  Ex1b uses a wrapped function that can be placed e.g. in the \texttt{SupportPrecision} module.
+Ex2 is more ``physical'':  $x$ and $12$ are compared assuming the typical physical scale of the problem is $1$. Indeed, the machine precision for a given real value is different depending on the real kind (here MK) and the absolute value. }
+% --------------------------------------------------------------------------------
+\topic{If-statements: no assumed order, example for optional argument}
+\begin{codea}
+if (present(x) .and. x>0) then 
+   ! Compiler might evaluate x>0 first
+   ! resulting in a segfault if not present
+endif
+\end{codea} 
+\begin{codeb}
+if (present(x)) then
+  if (x>0) then
+  endif
+endif
+\end{codeb}
+% --------------------------------------------------------------------------------
+
+% --------------------------------------------------------------------------------
+% --- Do loops
+% --------------------------------------------------------------------------------
+\subsection{Do loops and memory order}
+\label{sec:do}
+\topic{Do loops: first index should runs the fastest}
+\begin{codea}
+do i=1,n
+    do j=1,m ! bad, j run the fastest
+        a(i,j)=1.0_MK
+    enddo
+enddo
+\end{codea} 
+\begin{codeb}
+do j=1,m
+    do i=1,n ! good
+        a(i,j)=1.0_MK
+    enddo
+enddo
+\end{codeb}
+% --------------------------------------------------------------------------------
+\topic{Memory: typical arrays for 3D geometry}
+\begin{codea}
+real(MK), dimension(n,3)  :: Points
+\end{codea} 
+\begin{codeb}
+real(MK), dimension(3,n)  :: Points
+\end{codeb}
+% --------------------------------------------------------------------------------
+\topic{Do loops: iteration on real}
+\begin{codea}
+do x=0._MK, 10._MK, 0.1_MK
+enddo
+\end{codea} 
+\begin{codeb}
+! Bad practice
+! use loop on integer instead
+\end{codeb}
+% --------------------------------------------------------------------------------
+
+
+
+% --------------------------------------------------------------------------------
+% ---  Derived types
+% --------------------------------------------------------------------------------
+\subsection{Derived types}
+\label{sec:derivedtypes}
+\topic{Derived types:  use initializations and for pointers always!}
+\begin{codea}
+type T_mytype
+  real(MK), pointer :: p
+  integer :: i
+end type
+\end{codea} 
+\begin{codeb}
+type T_mytype
+  real(MK), pointer :: p=>null() !< always!
+  integer :: i=0 !< safe to rely on it
+end type
+\end{codeb}
+\reason{Components initialization is standard.} 
+% --------------------------------------------------------------------------------
+\topic{Derived types: component access}
+\begin{codea}
+T.i = 0 ! not standard
+\end{codea} 
+\begin{codeb}
+T%i = 0  ! OK
+\end{codeb}
+% --------------------------------------------------------------------------------
+\topic{Derived types: deallocation of components}
+\begin{codea}
+type T_mytype
+  real(MK), pointer :: p=>null() 
+end type
+![...]
+type(T_mytype), pointer :: t
+nullify(t)
+![...]
+if (associated(t)) then 
+
+   deallocate(t) ! potential memory loss
+endif
+\end{codea} 
+\begin{codeb}
+type T_mytype
+  real(MK), pointer :: p=>null()
+end type
+![...]
+type(T_mytype), pointer :: t
+nullify(t)
+![...]
+if (associated(t)) then
+    if (associated(t%p)) deallocate(t%p) 
+    deallocate(t) ! fine
+endif
+\end{codeb}
+% --------------------------------------------------------------------------------
+
+
+
+
+% --------------------------------------------------------------------------------
+% ---  Characters
+% --------------------------------------------------------------------------------
+\subsection{Characters}
+\label{sec:characters}
+\topic{Characters: use len specification}
+\begin{codea}
+character*16 :: s ! not standard
+\end{codea} 
+\begin{codeb}
+character(len=16) :: s
+\end{codeb}
+% --------------------------------------------------------------------------------
+\topic{Characters: use len specification}
+\begin{codea}
+function f(s)
+  character*(*) :: s ! akward character array
+end
+\end{codea} 
+\begin{codeb}
+function f(s)
+  character(len=*), intent(in) :: s
+end
+\end{codeb}
+
+% --------------------------------------------------------------------------------
+\topic{Characters array: better off using fixed length for old compilers}
+\begin{codefull}
+character(len=20), dimension(5)              :: strings  ! fine
+character(len=20), dimension(:), allocatable :: strings2 ! fine 
+character(len=:),  dimension(:), allocatable :: strings3 ! fine but compatibility issues
+strings(1)='a'
+print*,string(1)(1:20)
+! allocate(strings2(size(strings,1),size(strings,2)))                ! WRONG
+allocate(character(len=len(strings(1))) :: strings2(size(strings,1)))! GOOD
+\end{codefull}\par 
+% --------------------------------------------------------------------------------
+\topic{Characters: retrieving a string from C}
+\begin{codefull}
+subroutine string_switch(s_c) BIND(C, NAME='string_switch')
+    use PrecisionSupport, only: C_CHAR
+    use CStrings, only: cstring2fortran, fortranstring2c ! see folder _modules
+    ! Argument
+    character(kind=C_CHAR,len=1),dimension(*),intent(inout) :: s_c !< c string
+    ! Variable
+    character(len=255) :: s_f   !< fortran string
+    ! [...]
+    call cstring2fortran(s_c,s_f)
+    ! [...]
+    s_f='fortran'
+    call fortranstring2c(s_f,s_c)
+end 
+\end{codefull}
+
+
+% --------------------------------------------------------------------------------
+% --- Arrays
+% --------------------------------------------------------------------------------
+\subsection{Arrays}
+\label{sec:arrays}
+\topic{Arrays: array construct with double dot}
+\begin{codea}
+integer, dimension(10) :: x
+
+x=[1:10] ! not standard
+
+
+
+
+!
+\end{codea} 
+\begin{codeb}
+integer, dimension(10) :: x
+integer :: i
+x=[ (i,i=1,10) ] ! allright
+x=(/(i,i=1,10)/) ! even more portable
+
+do i=1,10
+    x(i)=i ! readable, less bug
+enddo
+\end{codeb}
+% --------------------------------------------------------------------------------
+
+
+% --------------------------------------------------------------------------------
+% --- File IO
+% --------------------------------------------------------------------------------
+\subsection{File IO}
+\label{sec:fileio}
+\topic{Unit value: don't use a fixed value}
+\begin{codea}
+
+
+open(99, ...) ! what if 99 is already opened?
+read(99)
+\end{codea} 
+\begin{codeb}
+use MainIO, only: get_free_unit()
+iunit=get_free_unit()
+open(iunit, ...)
+read(iunit)
+\end{codeb}
+% --------------------------------------------------------------------------------
+\topic{Binaries with direct access (e.g. Mann box): watch the record length, wrap it in a module!}
+\begin{codea}
+!
+open(iunit,file='u',recl=1,& !no standard 
+    access='direct',form='unformatted',&
+    status='old')
+\end{codea} 
+\begin{codeb}
+use SupportCompiler, only: RECORD_LENGTH
+open(iunit,file='u',recl=RECORD_LENGTH,& 
+    access='direct',form='unformatted',&
+    status='old')
+\end{codeb}
+\reason{Unfortunately, there is no standard for what recl should be. For intel and compaq by default \texttt{recl=1}. For gfortran (or intel with the flag \texttt{-assume byterecl}) \texttt{recl=4} }
+% --------------------------------------------------------------------------------
+\topic{Binaries with stream access (e.g. VTK bin): not available on old compilers}
+\begin{codea}
+open(iunit,'a.dat',form='UNFORMATTED',&
+     access = 'stream', action = 'WRITE',&
+     convert='BIG_ENDIAN') 
+\end{codea} 
+\begin{codeb}
+use SupportCompiler, only: open_stream_write
+call open_stream_write('a.dat') 
+!
+\end{codeb}
+%% --------------------------------------------------------------------------------
+\topic{Namelists: fine for derived types, but no pointers or allocatable.}
+\begin{codefull}
+    type T_RandomVar ! No pointers or allocatables
+        character(len=56)   :: sname = ''
+        real(MK)            :: value = 0._MK
+        type(T_Stats)       :: stats ! No pointers or allocatables
+    end type
+    type T_LinSpace ! No pointers or allocatables
+        real(MK), dimension(4)  :: moments = (/0._MK,0._MK,0._MK,0._MK/)
+    end type
+    ![...]
+    type(T_RandomVar) :: RandomVar
+    ![...]
+    namelist/RandomVarInputs/RandomVar
+    read(iunit,RandomVarInputs,iostat=ierr)
+\end{codefull} 
+% --------------------------------------------------------------------------------
+
+% --------------------------------------------------------------------------------
+% ---  Precision
+% --------------------------------------------------------------------------------
+\subsection{Precision}
+\label{sec:precision}
+
+\topic{Precision: in general, use a custom module}
+\begin{codea}
+
+real*4, real*8, 
+real*8
+integer(int_ptr_kind())
+\end{codea}
+\begin{codeb}
+use SupportPrecision, only: MK, SP, DP, PTRK
+real(SP), real(DP)
+real(MK)
+integer(PTRK)
+
+\end{codeb}
+% \reason{Different kind of precisions may be used but it's good practice to stick to C equivalents.}
+% --------------------------------------------------------------------------------
+\topic{Precision: If you really want to precise the size in bytes (8 bit)}
+\begin{codea}
+
+real*4, real*8, 
+integer*4, integer*8
+\end{codea} 
+\begin{codeb}
+use iso_fortran_env
+real(REAL32), real(REAL64)
+integer(INT32), real(INT64)
+\end{codeb}
+\reason{The syntax \texttt{*4} is depreciated. The iso-fortran-env module is not available on old compilers => Use a SupportCompiler module wrapped in a SupportPrecision module} 
+% --------------------------------------------------------------------------------
+\topic{Precision: If you need to communicate with C (recommended for DLLs)}
+\begin{codea}
+
+real
+double precision
+integer
+character
+logical
+\end{codea}
+\begin{codeb}
+use iso_c_binding
+real(C_FLOAT)
+real(C_DOUBLE)
+integer(C_INT)
+character(kind=C_CHAR)
+logical(C_BOOL)
+\end{codeb}
+\reason{The iso-fortran-env module is not available on old compilers => Use a SupportCompiler module wrapped in a SupportPrecision module} 
+% --------------------------------------------------------------------------------
+\topic{Precision: use explicit type conversions (with compiler warnings)}
+\begin{codea}
+!
+real*4           :: x
+double precision :: y
+![...]
+y = x  !implicit type conversion
+\end{codea} 
+\begin{codeb}
+use SupportPrecision, only: MPI_DOUBLE, MK
+real(MK)         :: x
+real(MPI_DOUBLE) :: y
+![...]
+y = real(x, MPI_DOUBLE) ! explicit conversion 
+\end{codeb}
+% 
+\topic{Summary}
+\includecode{_modules_parts/SupportPrecision.f90}
+
+
+
+\subsection{Preprocessor, DLLs, cross-language interoperability}
+-For C-strings see \autoref{sec:characters} and the file \verb|CStrings.f90|\\
+-For C-types see \autoref{sec:precision}\\
+
+\topic{Preprocessor}
+\begin{codea}
+
+! Intel/Compaq directives
+!DEC$ IF DEFINED(__INTEL__)
+   call thing()
+!DEC$ END IF
+
+! C preprocessor (gfortran/intel/Compaq)
+! (requires specific compiler flag)
+#if defined (__unix__)
+  call other()
+#endif
+\end{codea}
+\begin{codeb}
+use SupportCompiler, only: FORTRAN_COMPILER
+use SupportOS, only: OS_NAME
+!
+if (FORTRAN_COMPILER(1:5)=='ifort') then
+  call thing()
+endif
+
+
+if (OS_NAME(1:4)=='unix') then
+  call other()
+endif
+\end{codeb}
+\reason{Relying on a preprocessor is not really portable. It might be a matter of religion, but the code on the right is more portable. The if statements will not affect performances since it relies on compile time constants. Compiler optimization should remove dead-code and dead-if statements. Unfortunately, this cannot be used for decoration of procedures or data like \texttt{bind(C)} or \texttt{DLLEXPORT} that are discussed below.} 
+
+
+
+\topic{Procedure names/alias: Compaq is behind and that makes it difficult}
+\begin{codea}
+subroutine init(array1)
+!DEC$ ATTRIBUTES C, ALIAS:'init'::init
+\end{codea}
+\begin{codeb}
+subroutine init(array1) bind(C,name='init')
+!
+\end{codeb}
+\reason{The code on the left is standard 2003, cross-platform, cross-compiler, preprocessor-independent and just easy to use. The only down side is that the Compaq compiler does not support it. Note: for dllexport it makes it easier if the subroutine name and the bind-name are the same}
+
+
+\topic{Procedure exports for dll: windows is annoying and that makes it difficult}
+\begin{codea}
+subroutine init(array1) bind(c,name='init')
+!DEC$ IF .NOT. DEFINED(__LINUX__)
+!DEC$ ATTRIBUTES DLLEXPORT ::init
+!GCC$ ATTRIBUTES DLLEXPORT ::init
+!DEC$ END IF
+\end{codea}
+\begin{codeb}
+subroutine init(array1) bind(C,name='init')
+
+
+ 
+! Generate the def file yourself
+\end{codeb}
+\reason{The code above is not compatible with old compilers like Compaq due to the \texttt{bind(C)} directive. The code on the left should work for Intel and GCC but it relies on preprocessor directives.
+The code on the right is clean and portable. It requires more work on the windows users since the \texttt{.def} file needs to be written. A dll interface is not expected to change that often, so the work is not that heavy. The python tool \texttt{simple-fortran-parser} can generate the \texttt{.def} automatically based on all the \texttt{bind(C)} subroutines it finds in the code.}
+
+
+
+\topic{Procedure exports for dll: a more-or-less portable way}
+\begin{codea}
+#if defined OLD_COMPILER
+subroutine init(array1)
+!DEC$ ATTRIBUTES C, ALIAS:'init'::init
+#else
+subroutine init(array1) bind(c,name='init')
+#endif
+!DEC$ IF .NOT. DEFINED(__LINUX__)
+!DEC$ ATTRIBUTES DLLEXPORT ::init
+!GCC$ ATTRIBUTES DLLEXPORT ::init
+!DEC$ END IF
+\end{codea}
+\begin{codeb}
+#if defined OLD_COMPILER
+subroutine init(array1)
+!DEC$ ATTRIBUTES C, ALIAS:'init'::init
+#else
+subroutine init(array1) bind(c,name='init')
+#endif
+!
+!
+! Generate the def file yourself
+!
+\end{codeb}
+\reason{The above should work with compaq,intel,gcc on windows and linux as long a C preprocessor flag is given to the compilers (i.e. \texttt{-fpp} or \texttt{-cpp}) and as long as the Compaq compiler defines the flag \texttt{-DOLD\_COMPILER}. On linux with gfortran the \texttt{-Wno-attributes} could be use to avoid the warning. }
 
 
 \end{document}
