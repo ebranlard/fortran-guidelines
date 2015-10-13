@@ -1,0 +1,164 @@
+\usepackage[T1]{fontenc}
+% macro to select a scaled-down version of Bera Mono (for instance)
+% \makeatletter
+% \newcommand\BeraMonottfamily{%
+%   \def\fvm@Scale{0.9}% scales the font down
+%   \fontfamily{fvm}\selectfont% selects the Bera Mono font
+% }
+% \makeatother
+
+% \usepackage{DejaVuSansMono}
+% \usepackage{dejavu}
+%% which loads the DejaVu Serif and DejaVu Sans fonts as well
+% \renewcommand*\familydefault{\ttdefault}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings} % a inclure pour la fonction listing
+\usepackage{longtable}
+\usepackage{geometry}
+\usepackage{ifpdf}
+\ifpdf
+	\usepackage{graphicx}
+	\usepackage{epstopdf} %don't forget the shell-escape flag for pdflatex
+\else
+	\usepackage{graphicx}
+\fi
+\usepackage{hyperref}
+\usepackage{color} 
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{gret}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{orange}{rgb}{1,0.5,0}
+\definecolor{grey}{rgb}{0.88,0.88,0.88}
+\definecolor{midgrey}{rgb}{0.5,0.5,0.50}
+\definecolor{greylight}{rgb}{0.95,0.95,0.95}
+\definecolor{greensoft}{rgb}{0.25,0.95,0.25}
+%%for dtu
+\definecolor{dtured}{rgb}{0.6706,0.20784,0.227451}
+\definecolor{dtugrey}{rgb}{0.5,0.5,0.5}
+
+\geometry{
+a4paper,
+body={175mm,265mm},
+left=17mm,
+top=15mm,
+headheight=7mm,
+headsep=4mm,
+footskip=4mm,
+marginparsep=4mm,
+marginparwidth=27mm}
+% ---SPACING TWEAKS
+\usepackage{titlesec}
+% \titlespacing\section{0pt}{12pt plus 4pt minus 2pt}{0pt plus 2pt minus 2pt}
+% \titlespacing\subsection{0pt}{0pt}{-0pt}
+% \setlength{\aboveitemizeskip}{-05pt}
+% \setlength{\belowitemizeskip}{-3pt}
+% \setlength{\superparsep}{0.2cm}
+% \setlength{\captiontabsep}{-0.2cm}
+%\linespread{1.5} % line spacing
+% ---TOC tweaks
+%\setlength{\cftbeforechapskip}{2ex}
+%\setlength{\cftbeforepartskip}{1mm}
+% \setlength{\cftbeforesecskip}{0.05cm}
+% \setlength{\cftsecindent}{1cm}
+% \renewcommand{\cftsecfont}{}
+% \renewcommand{\cftsecdotsep}{\cftdotsep}
+%\setlength{\cftbeforesubsecskip}{-6pt}
+% --- Maths
+\setlength{\abovedisplayskip}{0.05cm} %space before maths/equations
+\setlength{\belowdisplayskip}{0.05cm} %space after maths
+% --- PARAGRAPHS
+\setlength{\parskip}{0.1cm}
+\setlength{\parindent}{0in}
+
+% --------------------------------------------------------------------------------
+% --- Code 
+% --------------------------------------------------------------------------------
+\newcommand{\basiclstset}{%
+\lstset{ %
+  backgroundcolor=\color{white},   % choose the background color; 
+  basicstyle=\ttfamily\footnotesize,        % the size of the fonts that are used for the code
+%   basicstyle=\BeraMonottfamily, 
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  commentstyle=\color{mygreen},    % comment style
+  deletekeywords={...},            % if you want to delete keywords from the given language
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  frame=single,	                   % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  language=Fortran,                 % the language of the code
+  otherkeywords={},            % if you want to add more keywords to the set
+%   numbersep=5pt,                   % how far the line-numbers are from the code
+%   numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+%   showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+%   showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+%   stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{mymauve},     % string literal style
+%   tabsize=2,	                   % sets default tabsize to 2 spaces
+%   title=\lstname,                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+%   belowskip=-2.0 \baselineskip,
+%   belowcaptionskip=0cm,
+%    abovecaptionskip=0cm,
+%   aboveskip=0.1cm,
+   belowskip=0em,
+% linewidth=\linewidth
+}
+}
+\basiclstset
+% \lstset{
+%   basicstyle=\BeraMonottfamily, 
+%   frame=single,
+% }
+
+% --------------------------------------------------------------------------------
+% --- Code related commands 
+% --------------------------------------------------------------------------------
+\lstloadlanguages{Fortran}
+
+\lstnewenvironment{code}
+{\null\hfill\minipage{0.48\textwidth}}
+    {\endminipage\hfill\null}
+
+\lstnewenvironment{codea}
+{\hfill\minipage[b]{0.48\textwidth}}
+    {\endminipage}
+\lstnewenvironment{codeb}
+{\hfill\minipage[b]{0.48\textwidth}}
+  {\endminipage\hfill\ \newline\null}
+
+\lstnewenvironment{codefull}
+{\minipage{1.0\textwidth}}
+    {\endminipage\newline\null}
+
+\lstnewenvironment{good}
+{\hfill\minipage{0.47\textwidth}\lstset{title=\textbf{good}}}
+    {\endminipage\hfill\null}
+
+\lstnewenvironment{bad}
+{\hfill\minipage{0.47\textwidth}\lstset{title=\textbf{bad}}}
+    {\endminipage\hfill\null}
+
+    \newcommand{\includecode}[1]{\lstinputlisting[title=\texttt{\detokenize{#1}}]{#1}}
+% --------------------------------------------------------------------------------
+% --- User-defined commands
+% --------------------------------------------------------------------------------
+\newcommand{\weird}[1]{\textcolor{red}{!!!#1 }}
+
+\newcommand{\topict}[1]{%
+   \multicolumn{2}{p{\textwidth}}{\newline\textbf{#1}}\\
+}
+\newcommand{\reasont}[1]{%
+    \multicolumn{2}{p{\textwidth}}{#1}\\
+}
+\newcommand{\topic}[1]{%
+    ~\vspace{-0.2cm}\par\textbf{#1}\\
+}
+\newcommand{\reason}[1]{%
+    #1\\
+}
