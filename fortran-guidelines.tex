@@ -44,14 +44,25 @@ In particular the real kind is stored as \verb|MK| in the \verb|SupportPrecision
     \item Avoid having two files with the same name in your project. It's easier to implement makefiles then.
 \end{enumerate}
 
-\topic{Modules: use implicit none, it propagates to contained routines}
-\begin{codefull}
+\topic{Modules: write implicit none in module only, it propagates to contained routines}
+\begin{codea}
+module SupportCompiler
+contains
+  subroutine foo()
+    implicit none
+  end subroutine
+end module 
+\end{codea}
+\begin{codea}
 module SupportCompiler
   implicit none
+contains
+  subroutine foo()
+  end subroutine
 end module 
-\end{codefull}
+\end{codea}
 
-\topic{Modules: make explicit use statements to avoid polluting your scope and help the reader}
+\topic{Modules: write explicit use-statements to avoid polluting your scope and help the reader}
 \begin{codefull}
 subroutine foo()
   use SupportCompiler, only: FORTRAN_COMPILER
@@ -72,7 +83,7 @@ end subroutine
 % --- Variables init
 % --------------------------------------------------------------------------------
 \subsection{Declarations, initialization, allocations}
-\topic{Initialization: Not in definitions, but straight after (except for derived types, see~\autoref{sec:derivedtypes})} 
+\topic{Initialization: not in definitions but straight after (except for derived types, see~\autoref{sec:derivedtypes})} 
 \begin{codea}
 subroutine foo()
   integer :: i = 0 !< implies save, bad!
@@ -91,7 +102,7 @@ end subroutine
 \end{codeb}
 \reason{Save is in general a bad practice. Note: hawc2-intel is compiled with the -save flag by default! This has to change.} 
 % --------------------------------------------------------------------------------
-\topic{Arguments declaration: use intent, except for pointers}
+\topic{Arguments declaration: use intent in declarations, except for pointers}
 \begin{codea}
 function(x,y,i,p)
   ! Arguments
@@ -127,7 +138,7 @@ allocate(x(1:10)); x(1:10)= 0.0_MK ! safe
 \begin{codea}
 allocate(x(1:10));
 ! Code above can crash with no backtrace
-x=0.0_MK
+x(1:10)=0.0_MK
 
 
 ! 
@@ -136,7 +147,7 @@ x=0.0_MK
 \begin{codeb}
 allocate(x(1:10),stat=ierr); 
 if (ierr/=0) print*,'x alloc error'; STOP
-x=0.0_MK
+x(1:10)=0.0_MK
 
 ! or, using a wrapped function:
 use MemoryManager, only: allocate_safe
@@ -146,7 +157,7 @@ call allocate_safe('x', x, 10, 0.0_MK)
 
 \subsection{Stack pitfalls}
 % --------------------------------------------------------------------------------
-\topic{Stack: Do not used assumed size local variable in routines}
+\topic{Stack: do not use assumed size local variable in routines}
 \begin{codea}
 function(x,n)
 ! Arguments
@@ -164,21 +175,21 @@ integer,intent(in) :: n
 real(MK),dimension(n),intent(inout) :: x !< ok
 ! Variables
 real(MK), dimension(:), allocatable :: y !< OK
-allocate(y(1:n)); y(1:n)= 0.0_MK         !< OK
+allocate(y(1:n)); y(1:n)= 0.0_MK         !  OK
 end
 \end{codeb}
 \reason{The assumed size local variables are allocated on the stack and this might result in stack overflows or corruptions.}
 % --------------------------------------------------------------------------------
-\topic{Stack: do not use intrinsic functions for large arrays/vectors}
+\topic{Stack: do not use intrinsic functions for large arrays/vectors (they sometimes use the stack)}
 \begin{codea}
-maxval
-maxloc
-pack
+maxval  ! Examples of known functions 
+maxloc  ! acting on array/vector that can use
+pack    ! the stack (e.g. Intel compiler)
 \end{codea} 
 \begin{codeb}
-!
-! Use for loops / customized user functions
-!
+! Instead, write your own custom function
+! using a for loop and no assumed size!
+! See Memory* in folder _modules_full
 \end{codeb}
 \reason{Segmentation faults can result from not following this guideline.}
 % --------------------------------------------------------------------------------
@@ -208,6 +219,7 @@ if(my_logical.eqv.your_logical.) print*,'good'
 if(my_logical) print*,'good'
 if(.not.my_logical) print*,'good'
 \end{codeb}
+\reason{For logical comparison \texttt{.eqv.} should be used. Most of the time, it can be omitted.}
 % --------------------------------------------------------------------------------
 \topic{If-statements: real equality comparison}
 \begin{codea}
@@ -223,21 +235,20 @@ if(.not.(abs(x-12.0_MK)>0.0_MK))     ! ex1
 if(precision_equal(x,12.0_MK))       ! ex1b
 !
 if(abs(x-12.0_MK)<precision(1.0_MK)) ! ex2
-!
 \end{codeb}
 \reason{In the above, ex1 is not so readable.  Ex1b uses a wrapped function that can be placed e.g. in the \texttt{SupportPrecision} module.
 Ex2 is more ``physical'':  $x$ and $12$ are compared assuming the typical physical scale of the problem is $1$. Indeed, the machine precision for a given real value is different depending on the real kind (here MK) and the absolute value. }
 % --------------------------------------------------------------------------------
-\topic{If-statements: no assumed order, example for optional argument}
+\topic{If-statements: there is no assumed order of evaluation (example here for optional argument)}
 \begin{codea}
 if (present(x) .and. x>0) then 
    ! Compiler might evaluate x>0 first
-   ! resulting in a segfault if not present
+   ! =>Segfault if x is not present
 endif
 \end{codea} 
 \begin{codeb}
 if (present(x)) then
-  if (x>0) then
+  if (x>0) then ! safe
   endif
 endif
 \end{codeb}
@@ -248,7 +259,7 @@ endif
 % --------------------------------------------------------------------------------
 \subsection{Do loops and memory order}
 \label{sec:do}
-\topic{Do loops: first index should runs the fastest}
+\topic{Do loops: first index should runs the fastest to respect memory order}
 \begin{codea}
 do i=1,n
     do j=1,m ! bad, j run the fastest
@@ -264,15 +275,15 @@ do j=1,m
 enddo
 \end{codeb}
 % --------------------------------------------------------------------------------
-\topic{Memory: typical arrays for 3D geometry}
+\topic{Memory: typical array dimensions for 3D geometry}
 \begin{codea}
 real(MK), dimension(n,3)  :: Points
 \end{codea} 
 \begin{codeb}
-real(MK), dimension(3,n)  :: Points
+real(MK), dimension(3,n)  :: Points 
 \end{codeb}
 % --------------------------------------------------------------------------------
-\topic{Do loops: iteration on real}
+\topic{Do loops: iteration on reals are bad practice}
 \begin{codea}
 do x=0._MK, 10._MK, 0.1_MK
 enddo
@@ -307,13 +318,13 @@ end type
 % --------------------------------------------------------------------------------
 \topic{Derived types: component access}
 \begin{codea}
-T.i = 0 ! not standard
+T.i = 0 ! . is not standard
 \end{codea} 
 \begin{codeb}
-T%i = 0  ! OK
+T%i = 0  ! % is OK
 \end{codeb}
 % --------------------------------------------------------------------------------
-\topic{Derived types: deallocation of components}
+\topic{Derived types: deallocate the components before the parent}
 \begin{codea}
 type T_mytype
   real(MK), pointer :: p=>null() 
@@ -350,7 +361,7 @@ endif
 % --------------------------------------------------------------------------------
 \subsection{Characters}
 \label{sec:characters}
-\topic{Characters: use len specification}
+\topic{Characters: use the \texttt{len} specification}
 \begin{codea}
 character*16 :: s ! not standard
 \end{codea} 
@@ -358,7 +369,7 @@ character*16 :: s ! not standard
 character(len=16) :: s
 \end{codeb}
 % --------------------------------------------------------------------------------
-\topic{Characters: use len specification}
+\topic{Characters: use the \texttt{len} specification for arguments}
 \begin{codea}
 function f(s)
   character*(*) :: s ! akward character array
@@ -371,13 +382,14 @@ end
 \end{codeb}
 
 % --------------------------------------------------------------------------------
-\topic{Characters array: better off using fixed length for old compilers}
+\topic{Characters array: it's to used fixed length for old compilers}
 \begin{codefull}
 character(len=20), dimension(5)              :: strings  ! fine
 character(len=20), dimension(:), allocatable :: strings2 ! fine 
-character(len=:),  dimension(:), allocatable :: strings3 ! fine but compatibility issues
+character(len=:),  dimension(:), allocatable :: strings3 ! fine but not for old compilers
 strings(1)='a'
 print*,string(1)(1:20)
+! Allocation: 
 ! allocate(strings2(size(strings,1),size(strings,2)))                ! WRONG
 allocate(character(len=len(strings(1))) :: strings2(size(strings,1)))! GOOD
 \end{codefull}\par 
@@ -385,8 +397,8 @@ allocate(character(len=len(strings(1))) :: strings2(size(strings,1)))! GOOD
 \topic{Characters: retrieving a string from C}
 \begin{codefull}
 subroutine string_switch(s_c) BIND(C, NAME='string_switch')
-    use PrecisionSupport, only: C_CHAR
-    use CStrings, only: cstring2fortran, fortranstring2c ! see folder _modules
+    use SupportPrecision, only: C_CHAR
+    use SupportStrings, only: cstring2fortran, fortranstring2c ! see folder _modules_full
     ! Argument
     character(kind=C_CHAR,len=1),dimension(*),intent(inout) :: s_c !< c string
     ! Variable
@@ -447,8 +459,9 @@ iunit=get_free_unit()
 open(iunit, ...)
 read(iunit)
 \end{codeb}
+\reason{MainIO is defined in \texttt{\_modules\_full}}
 % --------------------------------------------------------------------------------
-\topic{Binaries with direct access (e.g. Mann box): watch the record length, wrap it in a module!}
+\topic{Binaries with direct access (e.g. Mann box): watch for the record length, wrap it in a module!}
 \begin{codea}
 !
 open(iunit,file='u',recl=1,& !no standard 
