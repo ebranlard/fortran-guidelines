@@ -46,7 +46,7 @@
 %   keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
   keywordstyle=\color{blue},       % keyword style
   language=Fortran,                 % the language of the code
-  otherkeywords={bind},            % if you want to add more keywords to the set
+  otherkeywords={},            % if you want to add more keywords to the set
 %   numbersep=5pt,                   % how far the line-numbers are from the code
 %   numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
   rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
@@ -160,8 +160,20 @@
 \end{longtable}
 
 
-Summary
+Summary\\
 \begin{codefull}
+module SupportPrecision
+  ! Compiler interface to iso_c_binding
+  use SupportCompiler, only: C_FLOAT, C_DOUBLE, C_CHAR, C_INT, C_BOOL
+  ! Compiler interface to iso_fortran_env
+  use SupportCompiler, only: REAL32, REAL64, INT32, INT64
+  ! Compiler interface to int_ptr_kind
+  use SupportCompiler, only: IPTRK
+  !
+  integer, parameter :: SP = REAL32
+  integer, parameter :: DP = REAL64
+  integer, parameter :: MK = C_DOUBLE
+end module
 \end{codefull}
 
 
