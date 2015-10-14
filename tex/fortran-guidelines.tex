@@ -24,10 +24,14 @@ This is for instance the case for decoration of procedures or data like \texttt{
 A combination of both approaches is likely to be the optimal solution.
 
 \paragraph{In this document}
+The guidelines written in this document are an attempt to lean towards portability. The content of the document might evolve in the future.
 Wrapping of non-portable code into a separate module is the solution generally applied in this document. Different files are used to provide the differerent implementations of the interface of a given wrap-module.  Portability modules are called \verb|Support*| and their source code is located in the folder \cmd{_support*}.
 For instance, the kind of a real is stored as \verb|MK| in the \verb|SupportPrecision| module (see \autoref{sec:precision}).
 
 If recent standards offer options that helps portability, then this document will tend to favor these options despite the broken compatibility with regards to older compilers. This is the case for the \texttt{bind(C)} decoration which is very helpful for portability.
+
+\paragraph{In this repository} Preliminary attempts of ``portable'' modules and makefiles are provided in this repository.  Most of the code originates from \cmd{Omnivor}'s implementation. It used to be compatible linux/windows and gfortran/intel/compaq/sun/portland, though it was not fully tested recently.
+They are far from ``universal'' and will hopefully evolve in the future.
 
 \section{Recommendations}
 
