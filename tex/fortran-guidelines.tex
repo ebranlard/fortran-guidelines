@@ -130,7 +130,7 @@ subroutine foo()
   nullify(p) ! safe
 end subroutine 
 \end{codeb}
-\reason{Save is in general a bad practice. Note: hawc2-intel is compiled with the -save flag by default! This has to change.} 
+\reason{Inializing in the definition implies save, it's very bad practice and can lead to disastrous surprises (see examples in \cmd{_unit_tests}). Save is in general a bad practice. Note: hawc2-intel is compiled with the -save flag by default! This has to change.} 
 % --------------------------------------------------------------------------------
 \topic{Arguments declaration: use intent in declarations, except for pointers}
 \begin{codea}
@@ -219,9 +219,9 @@ pack    ! the stack (e.g. Intel compiler)
 \begin{codeb}
 ! Instead, write your own custom function
 ! using a for loop and no assumed size!
-! See Memory* in folder _tools
+! See e.g. PackFunction in folder _tools
 \end{codeb}
-\reason{Segmentation faults can result from not following this guideline.}
+\reason{Segmentation faults can result from not following this guideline (if your stack is indeed too small).}
 % --------------------------------------------------------------------------------
 \topic{Stack: linux systems}
 \begin{codea}
@@ -413,7 +413,7 @@ end
 \end{codeb}
 
 % --------------------------------------------------------------------------------
-\topic{Characters array: it's to used fixed length for old compilers}
+\topic{Characters array: it's best to used fixed length for old compilers}
 \begin{codefull}
 character(len=20), dimension(5)              :: strings  ! fine
 character(len=20), dimension(:), allocatable :: strings2 ! fine 
@@ -429,7 +429,7 @@ allocate(character(len=len(strings(1))) :: strings2(size(strings,1)))! GOOD
 \begin{codefull}
 subroutine string_switch(s_c) BIND(C, NAME='string_switch')
     use SupportPrecision, only: C_CHAR
-    use SupportStrings, only: cstring2fortran, fortranstring2c ! see folder _tools
+    use CStrings,         only: cstring2fortran, fortranstring2c ! see folder _tools
     ! Argument
     character(kind=C_CHAR,len=1),dimension(*),intent(inout) :: s_c !< c string
     ! Variable
@@ -526,7 +526,7 @@ call open_stream_write('a.dat')
         real(MK)            :: value = 0._MK
         type(T_Stats)       :: stats ! No pointers or allocatables
     end type
-    type T_LinSpace ! No pointers or allocatables
+    type T_Stats ! No pointers or allocatables
         real(MK), dimension(4)  :: moments = (/0._MK,0._MK,0._MK,0._MK/)
     end type
     ![...]
@@ -655,7 +655,7 @@ gfortran:
 \cmd{-E -dM}: show preprocessor macros\\
 ifort :
 \cmd{-fpp}: use C-preprocessor,
-\cmd{-E -dM}: show preprocessor macros\\
+\cmd{-E -dM -dryrun}: show preprocessor macros\\
 sun :
 \cmd{-xpp}: use C-preprocessor\\
 pgf90:
