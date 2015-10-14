@@ -6,16 +6,30 @@
 % --------------------------------------------------------------------------------
 \begin{document}
 \maketitle
+
 \tableofcontents
+
+\subsection*{Introduction}
+\paragraph{Portability Portability Portability}
+It is rather easy to write a code that is \textit{none standards, platform-dependent, architecture-dependent, compiler-dependent and library-dependent}.
+Writting a portable code takes more effort on the programmer's level but it has its benefits: robustness, reusablility and more users. You learn a lot and find a lot of bugs simply by using different compilers.
+
+\paragraph{Strategies}
+There is probably two main strategies to ensure portability: (i) using preprocessor directives or (ii) wrapping non-portable code in separate files.
+(i) Preprocessors directives are widely used, they are written close to the code which makes them easy to implement. The down side is they pollute the code and make it often very hard to read. Also, there is an inherent dependence on a specific preprocessor, and thus this reduces portability. The C-preprocessor is built-in in most compilers, and is probably the one that should be used if a preprocessor approach is chosen. 
+(ii) Chosing to wrap non-portable code into separate files keeps the whole code perfectly readable. Further, the developpers responsible for a given library, architecture or OS have only a few files to work with, the rest of the code being ``unversal''.
+The down side is that it increases the number of source files and requires the ``Makefile'' or the ``Project'' to select the proper files. 
+Also, not all the power of the preprocessor can be achieved in this way.
+This is for instance the case for decoration of procedures or data like \texttt{bind(C)} or \texttt{DLLEXPORT} (see \autoref{sec:dlls}).
+A combination of both approaches is likely to be the optimal solution.
+
+\paragraph{In this document}
+Wrapping of non-portable code into a separate module is the solution generally applied in this document. Different files are used to provide the differerent implementations of the interface of a given wrap-module.  Portability modules are called \verb|Support*| and their source code is located in the folder \cmd{_support*}.
+For instance, the kind of a real is stored as \verb|MK| in the \verb|SupportPrecision| module (see \autoref{sec:precision}).
+
+If recent standards offer options that helps portability, then this document will tend to favor these options despite the broken compatibility with regards to older compilers. This is the case for the \texttt{bind(C)} decoration which is very helpful for portability.
+
 \section{Recommendations}
-\subsection{Portability Portability Portability}
-Code that is - \textit{none standards, platform-dependent, architecture-dependent, compiler-dependent, library-dependent}
-should always be wrapped into a separate module. Different files can then used to provide the differerent implementations of this module, all with the same interface.
-
-In this document, we use modules \verb|Support*| for the portability modules.
-In particular the real kind is stored as \verb|MK| in the \verb|SupportPrecision| module (see \autoref{sec:precision}).
-
-
 
 
 % --------------------------------------------------------------------------------
@@ -24,8 +38,9 @@ In particular the real kind is stored as \verb|MK| in the \verb|SupportPrecision
 \subsection{Files and modules: towards a modular library-oriented code}
 \topic{Files and modules: general guidelines}
 \begin{enumerate}
+    \item Non-portable code should be placed in a separate directory to avoid polluting the ``universal'' code.
     \item Modules containing derived types definitions should not contain anything else: no data or routines (though parameters/constants can be fine).  This seriously reduces the chances to run into circular dependencies problems. 
-    \item Modules containing data should only contain this data: no types or routines. This reduces circular dependencies problems. This helps the identification of the data ``stored'' by the librairies. In fact, it's best not to have data modules at all (see next point).
+    \item Modules containing data should only contain this data: no types or routines. This reduces circular dependencies problems. This helps the identification of the data ``stored'' by the librairies. In fact, it's best not to reduce data modules to a minimum (see next point).
     \item Data modules should be avoided. In a ``library''-like implementation, the ``user'' owns the data, not the library. The library is made of tools that manipulate the user's data but does not store anything. This makes the library thread safe and the code implemented can be more readily re-used.
     \item Use one module per files, it makes it easier to find them and reduces circular dependencies problem.
     \item The following structure can be adopted:
@@ -33,13 +48,13 @@ In particular the real kind is stored as \verb|MK| in the \verb|SupportPrecision
             \item \verb|AirfoilTypes.f90|  (contains no data)
             \item \verb|AirfoilParams.f90| (contains compile time constants, e.g. to increase code readibility)
             \item \verb|AirfoilTools.f90|  (contains no data, manipulate derive type instances as arguments)
-            \item \verb|AirfoilData.f90| (fine, but the aim is to remove this module at the end, see point 3 above)
+            \item \verb|AirfoilData.f90| (fine, but the aim is to remove this module at the end, see point 4 above)
         \end{itemize}
-    \item Extensions: Windows users, please be aware of the case (always display extension in your file manager!). It's good to stay consistent in your program, it helps creating makefiles that can be used on any platforms. Some general conventions are:
+    \item File extensions: Some OS are case-sensitive. Make sure you display file extensions in your file manager. It's good to stay consistent in the extension you use for your source files. It helps creating makefiles that can be used on any platforms. Some general conventions are:
         \begin{itemize}
             \item \verb|.f90|: Fortran 90 code
             \item \verb|.f|  : Old fortran code
-            \item \verb|.F*|  : Fortran code that needs a preprocessor
+            \item \verb|.F*|  : Fortran code that needs a preprocessor or Template for code generator (e.g. cheetah)
         \end{itemize}
     \item Avoid having two files with the same name in your project. It's easier to implement makefiles then.
 \end{enumerate}
@@ -125,14 +140,14 @@ end
 \end{codeb}
 \reason{More compiler optimizations can take place and errors detected at compilation time.}
 % --------------------------------------------------------------------------------
-\topic{Initialization: after allocate}
+\topic{Initialization: always initialize after allocation}
 \begin{codea}
 allocate(x(1:10));! x is garbage
 \end{codea} 
 \begin{codeb}
 allocate(x(1:10)); x(1:10)= 0.0_MK ! safe
 \end{codeb}
-\reason{Compilers have flags to define the behavior of allocate (e.g. set to 0 or NaN). It's more portable not to rely on it.}
+\reason{Compilers have flags to define the behavior of allocate (e.g. set to 0 or NaN). It's more portable not to rely on it. In statements and declarations, specifying the bounds explicitely is good practice: it reminds the reader of the dimensions, it helps the compiler, and bound mismatch can be found by the compiler.}
 % --------------------------------------------------------------------------------
 \topic{Allocations: the safe way}
 \begin{codea}
@@ -189,7 +204,7 @@ pack    ! the stack (e.g. Intel compiler)
 \begin{codeb}
 ! Instead, write your own custom function
 ! using a for loop and no assumed size!
-! See Memory* in folder _modules_full
+! See Memory* in folder _tools
 \end{codeb}
 \reason{Segmentation faults can result from not following this guideline.}
 % --------------------------------------------------------------------------------
@@ -301,7 +316,7 @@ enddo
 % --------------------------------------------------------------------------------
 \subsection{Derived types}
 \label{sec:derivedtypes}
-\topic{Derived types:  use initializations and for pointers always!}
+\topic{Derived types:  use initializations, especially for pointers, always =>null() them}
 \begin{codea}
 type T_mytype
   real(MK), pointer :: p
@@ -352,7 +367,8 @@ if (associated(t)) then
 endif
 \end{codeb}
 % --------------------------------------------------------------------------------
-
+\topic{Derived types: automatic code generation}
+A bit of advertisment here, \cmd{simple-fortran-parser} can generate automatic code for derived types (like read/write to binary, init/dealloc). 
 
 
 
@@ -398,7 +414,7 @@ allocate(character(len=len(strings(1))) :: strings2(size(strings,1)))! GOOD
 \begin{codefull}
 subroutine string_switch(s_c) BIND(C, NAME='string_switch')
     use SupportPrecision, only: C_CHAR
-    use SupportStrings, only: cstring2fortran, fortranstring2c ! see folder _modules_full
+    use SupportStrings, only: cstring2fortran, fortranstring2c ! see folder _tools
     ! Argument
     character(kind=C_CHAR,len=1),dimension(*),intent(inout) :: s_c !< c string
     ! Variable
@@ -459,7 +475,7 @@ iunit=get_free_unit()
 open(iunit, ...)
 read(iunit)
 \end{codeb}
-\reason{MainIO is defined in \texttt{\_modules\_full}}
+\reason{MainIO is defined in \texttt{\_tools}}
 % --------------------------------------------------------------------------------
 \topic{Binaries with direct access (e.g. Mann box): watch for the record length, wrap it in a module!}
 \begin{codea}
@@ -575,48 +591,124 @@ real(MPI_DOUBLE) :: y
 ![...]
 y = real(x, MPI_DOUBLE) ! explicit conversion 
 \end{codeb}
-% 
-\topic{Summary}
-\includecode{_modules_parts/SupportPrecision.f90}
+% % 
+% \topic{Summary}
+% \includecode{_modules_parts/SupportPrecision.f90}
+
+% --------------------------------------------------------------------------------
+% --- OS
+% --------------------------------------------------------------------------------
+\subsection{Operating System}
+\label{sec:os}
+A lot of fortran builtin routines are cross-platform. 
+The main problems can be found when creating directories and inquiring about files.
+Compilers have some non-standards extensions. Cross platform solutions can easily be implemented.
+The solution advised here is to put OS-specific parameters (like commands, and slash) in a module \cmd{SupportSystem} (see folder \cmd{_support}) which is then included by a \cmd{FileSystem} module (in folder \cmd{_tools}).
+
+
+% --------------------------------------------------------------------------------
+% --- Makefile
+% --------------------------------------------------------------------------------
+\subsection{Makefile}
+\label{sec:makefile}
+Makefiles are convenient to compile code on multiple platforms using different compilers and libraries. The current repository contains examples in the \cmd{_\mkf} folder.
+\cmd{MakefileOS.mk} attempts to detect the OS and architecure and unify OS-specific parameters.
+\cmd{MakefileFortran.mk} attempts to unify Fortan compiler flags.
+
+% --------------------------------------------------------------------------------
+% --- Preprocessor 
+% --------------------------------------------------------------------------------
+\subsection{Preprocessor}
+\label{sec:preprocessor}
+This section presents some generalities about preprocessors and examples of cases where the preprocessor directives can be replaced by wrapped code in separate modules.
+Examples where this approach is not possible are found in \autoref{sec:dlls}.
+As mentioned in the introduction, relying on a preprocessor is not really portable and the wrapped approach should be preferred whenever possible. Also, the C-preprocessor being the most used one, it's best to use this one.
+
+\topic{Macros}
+The most used feature is something of the form \cmd{if defined MACRO then ...  endif}.
+The string \cmd{MACRO} is defined by the compiler or the user.
+Macros are defined on the command line using \cmd{-DMACRO}. Since it is a compiler variable intended to be defined in the entire scope of the program, a convention is to surround the macro name with double underscores, e.g. \cmd{__dtu__} (see POSIX standard and ANSI-C standards).
+For a list of predefined macros for Compilers/OS/Archi:~\url{http://sourceforge.net/p/predef/wiki/Home/}\\
+Given the variability of definitions, it is advised to always (re)define the macros that your are using on the command line: e.g. \cmd{-D__linux__}, \cmd{-D_WIN32}, \cmd{D__intel__}, \cmd{D__compaq__},\cmd{D__amd64__},\cmd{D__i386__}. For instance \cmd{-D__linux__} is not defined by gfortran on linux.
+
+\topic{C-Preprocessor}
+The C-Preprocessor is supported by: intel, gfortran, compaq, sun, pgi portland.\\
+Macros are \textbf{case sensitive}.
+
+gfortran: 
+\cmd{-cpp}: use C-preprocessor,
+\cmd{-E -dM}: show preprocessor macros\\
+ifort :
+\cmd{-fpp}: use C-preprocessor,
+\cmd{-E -dM}: show preprocessor macros\\
+sun :
+\cmd{-xpp}: use C-preprocessor\\
+pgf90:
+\cmd{-Mpreproc} : use C-preprocessor\\
+%
+\topic{DEC-Preprocessor}
+The DEC-Preprocessor is supported by: intel and compaq.\\
+Macros are \textbf{case in-sensitive}.
+
+\topic{GNU-Preprocessor}
+The GNU-Preprocessor is supported by: gfortran.\\
+It is only used to define \cmd{ATTRIBUTES}, it doesn't support \cmd{if defined}.\\
+\cmd{!GCC$ ATTRIBUTES DLLEXPORT :: init}
 
 
 
-\subsection{Preprocessor, DLLs, cross-language interoperability}
--For C-strings see \autoref{sec:characters} and the file \verb|CStrings.f90|\\
--For C-types see \autoref{sec:precision}\\
-
-\topic{Preprocessor}
+\topic{Preprocessor: Examples where preprocessor directives can be removed}
 \begin{codea}
-
-! Intel/Compaq directives
-!DEC$ IF DEFINED(__INTEL__)
-   call thing()
+!DEC$ IF DEFINED(__HDF5__)
+   call hdf5_init()
 !DEC$ END IF
-
-! C preprocessor (gfortran/intel/Compaq)
-! (requires specific compiler flag)
-#if defined (__unix__)
-  call other()
+\end{codea}
+\begin{codeb}
+use SupportHDF5, only: hdf5_init()
+call hdf5_init()
+!
+\end{codeb}\\
+\begin{codea}
+! C preprocessor
+#if defined _WIN32
+  call mkdir_windows('fold')
+#elif defined __unix__
+  call mkdir_linux('fold')
 #endif
 \end{codea}
 \begin{codeb}
-use SupportCompiler, only: FORTRAN_COMPILER
-use SupportOS, only: OS_NAME
+! FileSystem is found in _tools, it uses SupportSystem
+use FileSystem, only: system_mkdir 
+
+call system_mkdir('fold')
 !
-if (FORTRAN_COMPILER(1:5)=='ifort') then
-  call thing()
-endif
-
-
-if (OS_NAME(1:4)=='unix') then
-  call other()
+\end{codeb}
+A possible variation (not as clean):\\
+\begin{codea}
+! C preprocessor
+#if defined _WIN32
+  !do something
+#elif defined __unix__
+  !do another thing
+#endif
+\end{codea}
+\begin{codeb}
+use SupportSystem, only: OSNAME
+if (OSNAME(1:7)=='windows') then
+    !do something
+elseif if (OSNAME(1:5)=='linux') then
+    !do another thing
 endif
 \end{codeb}
-\reason{Relying on a preprocessor is not really portable. It might be a matter of religion, but the code on the right is more portable. The if statements will not affect performances since it relies on compile time constants. Compiler optimization should remove dead-code and dead-if statements. Unfortunately, this cannot be used for decoration of procedures or data like \texttt{bind(C)} or \texttt{DLLEXPORT} that are discussed below.} 
+\reason{The if statements will not affect performances since they relies on compile time constants. Compiler optimization should remove dead-code and dead-if statements. This method cannot be used around ``use'' statements or routines declarations.}
 
 
+\subsection{DLLs, cross-language interoperability}
+\label{sec:dlls}
+-For C-strings see \autoref{sec:characters} and the file \verb|CStrings.f90|\\
+-For C-types see \autoref{sec:precision}\\
 
-\topic{Procedure names/alias: Compaq is behind and that makes it difficult}
+\topic{Procedure names/alias: bind(C) is really convenient, but not supported by Compaq}
 \begin{codea}
 subroutine init(array1)
 !DEC$ ATTRIBUTES C, ALIAS:'init'::init
@@ -628,7 +720,7 @@ subroutine init(array1) bind(C,name='init')
 \reason{The code on the left is standard 2003, cross-platform, cross-compiler, preprocessor-independent and just easy to use. The only down side is that the Compaq compiler does not support it. Note: for dllexport it makes it easier if the subroutine name and the bind-name are the same}
 
 
-\topic{Procedure exports for dll: windows is annoying and that makes it difficult}
+\topic{Procedure exports for dll: the problem of the def file}
 \begin{codea}
 subroutine init(array1) bind(c,name='init')
 !DEC$ IF .NOT. DEFINED(__LINUX__)

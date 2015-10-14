@@ -1,0 +1,49 @@
+/opt/intel/composer_xe_2013_sp1.1.106/bin/intel64/fpp  \
+    -D__INTEL_COMPILER=1400 \
+    -D__INTEL_COMPILER_UPDATE=1 \
+    -D__unix__ \
+    -D__unix \
+    -D__linux__ \
+    -D__linux \
+    -D__gnu_linux__ \
+    -Dunix \
+    -Dlinux \
+    -D__ELF__ \
+    -D__x86_64 \
+    -D__x86_64__ \
+    -D_MT \
+    -D__INTEL_COMPILER_BUILD_DATE=20131008 \
+    -D__PIC__ \
+    -D__pic__ \
+    -D__INTEL_OFFLOAD \
+    -D__i686 \
+    -D__i686__ \
+    -D__pentiumpro \
+    -D__pentiumpro__ \
+    -D__pentium4 \
+    -D__pentium4__ \
+    -D__tune_pentium4__ \
+    -D__SSE2__ \
+    -D__SSE__ \
+    -D__MMX__ \
+    -D__MYMACRO__ \
+    -I. \
+    -I/opt/intel/composer_xe_2013_sp1.1.106/mkl/include \
+    -I/opt/intel/composer_xe_2013_sp1.1.106/compiler/include/intel64 \
+    -I/opt/intel/composer_xe_2013_sp1.1.106/compiler/include \
+    -I/usr/local/include \
+    -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include \
+    -I/usr/lib/gcc/x86_64-linux-gnu/4.9/include-fixed \
+    -I/usr/include \
+    -I/usr/include/x86_64-linux-gnu \
+    -free \
+    -4Ycpp \
+    -4Ncvf \
+    -f_com=yes \
+    empty.f90
+
+rm /tmp/ifortlibgccrBTzwG
+rm /tmp/ifortgnudirsSY10LV
+rm /tmp/ifortdummyOtpghq.c
+rm /tmp/ifortdashvZC5TwF
+rm /tmp/ifortargQeufNU
