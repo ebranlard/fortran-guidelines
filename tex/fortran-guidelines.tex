@@ -17,7 +17,7 @@ Writting a portable code takes more effort on the programmer's level but it has 
 \paragraph{Strategies}
 There is probably two main strategies to ensure portability: (i) using preprocessor directives or (ii) wrapping non-portable code in separate files.
 (i) Preprocessors directives are widely used, they are written close to the code which makes them easy to implement. The down side is they pollute the code and make it often very hard to read. Also, there is an inherent dependence on a specific preprocessor, and thus this reduces portability. The C-preprocessor is built-in in most compilers, and is probably the one that should be used if a preprocessor approach is chosen. 
-(ii) Chosing to wrap non-portable code into separate files keeps the whole code perfectly readable. Further, the developpers responsible for a given library, architecture or OS have only a few files to work with, the rest of the code being ``unversal''.
+(ii) Chosing to wrap non-portable code into separate files keeps the whole code perfectly readable. Further, the developpers responsible for a given library, architecture or OS have only a few files to work with, the rest of the code being ``universal''.
 The down side is that it increases the number of source files and requires the ``Makefile'' or the ``Project'' to select the proper files. 
 Also, not all the power of the preprocessor can be achieved in this way.
 This is for instance the case for decoration of procedures or data like \texttt{bind(C)} or \texttt{DLLEXPORT} (see \autoref{sec:dlls}).
@@ -29,6 +29,15 @@ Wrapping of non-portable code into a separate module is the solution generally a
 For instance, the kind of a real is stored as \verb|MK| in the \verb|SupportPrecision| module (see \autoref{sec:precision}).
 
 If recent standards offer options that helps portability, then this document will tend to favor these options despite the broken compatibility with regards to older compilers. This is the case for the \texttt{bind(C)} decoration which is very helpful for portability.
+
+The following convention is used in this document:\\
+\begin{codea}
+! BAD PRACTICE
+\end{codea}
+\begin{codeb}
+! GOOD PRACTICE
+\end{codeb}
+
 
 \paragraph{In this repository} Preliminary attempts of ``portable'' modules and makefiles are provided in this repository.  Most of the code originates from \cmd{Omnivor}'s implementation. It used to be compatible linux/windows and gfortran/intel/compaq/sun/portland, though it was not fully tested recently.
 They are far from ``universal'' and will hopefully evolve in the future.
@@ -44,7 +53,7 @@ They are far from ``universal'' and will hopefully evolve in the future.
 \begin{enumerate}
     \item Non-portable code should be placed in a separate directory to avoid polluting the ``universal'' code.
     \item Modules containing derived types definitions should not contain anything else: no data or routines (though parameters/constants can be fine).  This seriously reduces the chances to run into circular dependencies problems. 
-    \item Modules containing data should only contain this data: no types or routines. This reduces circular dependencies problems. This helps the identification of the data ``stored'' by the librairies. In fact, it's best not to reduce data modules to a minimum (see next point).
+    \item Modules containing data should only contain this data: no types or routines. This reduces circular dependencies problems. This helps the identification of the data ``stored'' by the librairies. In fact, it's best to reduce data modules to a minimum (see next point).
     \item Data modules should be avoided. In a ``library''-like implementation, the ``user'' owns the data, not the library. The library is made of tools that manipulate the user's data but does not store anything. This makes the library thread safe and the code implemented can be more readily re-used.
     \item Use one module per files, it makes it easier to find them and reduces circular dependencies problem.
     \item The following structure can be adopted:
@@ -66,20 +75,22 @@ They are far from ``universal'' and will hopefully evolve in the future.
 \topic{Modules: write implicit none in module only, it propagates to contained routines}
 \begin{codea}
 module SupportCompiler
+  implicit none
 contains
   subroutine foo()
-    implicit none
+    implicit none ! Not needed
   end subroutine
 end module 
 \end{codea}
-\begin{codea}
+\begin{codeb}
 module SupportCompiler
   implicit none
 contains
   subroutine foo()
+
   end subroutine
 end module 
-\end{codea}
+\end{codeb}\\
 
 \topic{Modules: write explicit use-statements to avoid polluting your scope and help the reader}
 \begin{codefull}
@@ -296,10 +307,10 @@ enddo
 % --------------------------------------------------------------------------------
 \topic{Memory: typical array dimensions for 3D geometry}
 \begin{codea}
-real(MK), dimension(n,3)  :: Points
+real(MK), dimension(n,3)  :: Points ! bad
 \end{codea} 
 \begin{codeb}
-real(MK), dimension(3,n)  :: Points 
+real(MK), dimension(3,n)  :: Points ! ok
 \end{codeb}
 % --------------------------------------------------------------------------------
 \topic{Do loops: iteration on reals are bad practice}
@@ -559,7 +570,7 @@ use iso_fortran_env
 real(REAL32), real(REAL64)
 integer(INT32), real(INT64)
 \end{codeb}
-\reason{The syntax \texttt{*4} is depreciated. The iso-fortran-env module is not available on old compilers => Use a SupportCompiler module wrapped in a SupportPrecision module} 
+\reason{The syntax \texttt{*4} is depreciated. The \cmd{iso_fortran_env} module is not available on old compilers => Use a SupportCompiler module wrapped in a SupportPrecision module. See \cmd{_support/SupportPrecision.f90}} 
 % --------------------------------------------------------------------------------
 \topic{Precision: If you need to communicate with C (recommended for DLLs)}
 \begin{codea}
@@ -578,7 +589,7 @@ integer(C_INT)
 character(kind=C_CHAR)
 logical(C_BOOL)
 \end{codeb}
-\reason{The iso-fortran-env module is not available on old compilers => Use a SupportCompiler module wrapped in a SupportPrecision module} 
+\reason{The \cmd{iso_c_binding} module is not available on old compilers => Use a SupportCompiler module wrapped in a SupportPrecision module. See \cmd{_support/SupportPrecision.f90}} 
 % --------------------------------------------------------------------------------
 \topic{Precision: use explicit type conversions (with compiler warnings)}
 \begin{codea}
