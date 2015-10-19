@@ -1,7 +1,20 @@
-all: test_batch
-	#@make -C tex
+all: pdf test_batch
+
+clean:
+	@make --no-print-directory -C tex clean
+	@make --no-print-directory -C _unit_tests clean
+# --------------------------------------------------------------------------------
+# --- Pdf
+# --------------------------------------------------------------------------------
+pdf:tex/fortran-guidelines.pdf
+	
+tex/fortran-guidelines.pdf:
+	@make -C tex
 
 
+# --------------------------------------------------------------------------------
+# ---  
+# --------------------------------------------------------------------------------
 test:
 	@make -C _unit_tests
 

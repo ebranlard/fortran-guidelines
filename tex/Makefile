@@ -267,7 +267,7 @@ dateit:
 
 clean :
 	@$(RM) *.aux *.bbl *.blg *.log *.dvi *.idx *.ilg *.ind *.toc *.lot *.thm *.cb *.cb2 *.gls *.mtc0\
-	 *.lof *~ *.bak *.blg *.exa *.adx *.bmt *.mtc *.out *.som *.glo *.glx *.tns *.tpt *.maf *.brf
+	 *.lof *~ *.bak *.blg *.exa *.adx *.bmt *.mtc *.out *.som *.glo *.glx *.tns *.tpt *.maf *.brf *.gz
 	
 cleansvgs:
 	$(RM) $(SVGTEXS2PDFS) $(SVGS2PDFS)

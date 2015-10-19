@@ -732,7 +732,10 @@ subroutine init(array1)
 subroutine init(array1) bind(C,name='init')
 !
 \end{codeb}
-\reason{The code on the left is standard 2003, cross-platform, cross-compiler, preprocessor-independent and just easy to use. The only down side is that the Compaq compiler does not support it. Note: for dllexport it makes it easier if the subroutine name and the bind-name are the same}
+\reason{The code on the left is standard 2003, cross-platform, cross-compiler, preprocessor-independent and just easy to use. The only down side is that the Compaq compiler does not support it. Note: for dllexport it makes it easier if the subroutine name and the bind-name are the same.
+    NOTE: An array dummy argument of a BIND(C) procedure must be an explicit shape (\cmd{dimension(n), dimension(n,m)}) or assumed size array (\cmd{dimension(*), dimension(lda,*)}).
+    If it's an assumed size array, the size of the array is not computable and thus the upper bound should always be precised, i.e. \cmd{A(1,:)} should be something like \cmd{A(1,1:n)} } 
+
 
 
 \topic{Procedure exports for dll: the problem of the def file}
