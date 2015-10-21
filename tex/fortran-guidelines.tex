@@ -1,6 +1,7 @@
 \documentclass{article} 
 \input{_preamble.tex}
 \title{Some Fortran guidelines and pitfall}
+\author{https://gitlab.windenergy.dtu.dk/ebra/fortran-guidelines}
 % --------------------------------------------------------------------------------
 % --- Document 
 % --------------------------------------------------------------------------------
@@ -49,6 +50,7 @@ They are far from ``universal'' and will hopefully evolve in the future.
 % --- Files
 % --------------------------------------------------------------------------------
 \subsection{Files and modules: towards a modular library-oriented code}
+\label{sec:modules}
 \topic{Files and modules: general guidelines}
 \begin{enumerate}
     \item Non-portable code should be placed in a separate directory to avoid polluting the ``universal'' code.
@@ -116,7 +118,7 @@ end subroutine
 \topic{Initialization: not in definitions but straight after (except for derived types, see~\autoref{sec:derivedtypes})} 
 \begin{codea}
 subroutine foo()
-  integer :: i = 0 !< implies save, bad!
+  integer :: i = 0 !< implies save, bad!!!!
   real(MK), pointer :: p=>null() !< idem
    
 
@@ -130,7 +132,7 @@ subroutine foo()
   nullify(p) ! safe
 end subroutine 
 \end{codeb}
-\reason{Inializing in the definition implies save, it's very bad practice and can lead to disastrous surprises (see examples in \cmd{_unit_tests}). Save is in general a bad practice. Note: hawc2-intel is compiled with the -save flag by default! This has to change.} 
+\reason{Inializing in the definition implies the attribute \cmd{save}, it's very bad practice and can lead to disastrous surprises (see examples in \cmd{_unit_tests}). Save is in general a bad practice (like global variables). Note: for some reason hawc2-intel is compiled with the -save flag by default!}
 % --------------------------------------------------------------------------------
 \topic{Arguments declaration: use intent in declarations, except for pointers}
 \begin{codea}
@@ -184,6 +186,23 @@ use MemoryManager, only: allocate_safe
 call allocate_safe('x', x, 10, 0.0_MK)
 \end{codeb}
 
+% --------------------------------------------------------------------------------
+\topic{Data declaration within module: use save and initialization}
+\begin{codea}
+module A
+    ! save is more or less implied
+    integer :: i
+    integer, pointer :: p
+end module
+\end{codea} 
+\begin{codeb}
+module A
+    ! good practice to write 'save', and init
+    integer, save          :: i = 0
+    integer, save, pointer :: p => null()
+end module
+\end{codeb}
+\reason{The value of \cmd{i} may be lost if the module becomes out of scope. In practice it doesn't occur, but it's just safe to write \cmd{save}... It's probably the only time the \cmd{save} attribute should be used. As mentionned in \autoref{sec:modules}, data modules are to be reduced to a minimal and it's best if they contain only data. Note: for \cmd{common} blocks, save should be used as well for the same reasons. }
 
 \subsection{Stack pitfalls}
 % --------------------------------------------------------------------------------
