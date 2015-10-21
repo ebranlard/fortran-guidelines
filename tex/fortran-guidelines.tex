@@ -266,7 +266,7 @@ if(precision_equal(x,12.0_MK))       ! ex1b
 !
 if(abs(x-12.0_MK)<precision(1.0_MK)) ! ex2
 \end{codeb}
-\reason{In the above, ex1 is not so readable.  Ex1b uses a wrapped function that can be placed e.g. in the \texttt{SupportPrecision} module.
+\reason{In the above, ex1 is allright but not so readable.  Ex1b uses a wrapped function that can be placed e.g. in the \texttt{SupportPrecision} module.
 Ex2 is more ``physical'':  $x$ and $12$ are compared assuming the typical physical scale of the problem is $1$. Indeed, the machine precision for a given real value is different depending on the real kind (here MK) and the absolute value. }
 % --------------------------------------------------------------------------------
 \topic{If-statements: there is no assumed order of evaluation (example here for optional argument)}
@@ -448,7 +448,7 @@ end
 % --------------------------------------------------------------------------------
 \subsection{Arrays}
 \label{sec:arrays}
-\topic{Arrays: array construct with double dot}
+\topic{Arrays: array construct with double dot is not standard}
 \begin{codea}
 integer, dimension(10) :: x
 
@@ -546,18 +546,16 @@ call open_stream_write('a.dat')
 \topic{Precision: in general, use a custom module}
 \begin{codea}
 
-real*4, real*8, 
 real*8
 integer(int_ptr_kind())
 \end{codea}
 \begin{codeb}
-use SupportPrecision, only: MK, SP, DP, PTRK
-real(SP), real(DP)
+use SupportPrecision, only: MK, PK
 real(MK)
-integer(PTRK)
+integer(PK)
 
 \end{codeb}
-% \reason{Different kind of precisions may be used but it's good practice to stick to C equivalents.}
+\reason{The syntax \texttt{*8} is depreciated. It is convenient if you need a real that takes exactly 8 bytes, but still, it's depreciated (see next paragraph). Note that \cmd{real*8} and \cmd{real(8)} have no reason to be the same (the kinds are compiler dependent). \cmd{int_ptr_kind} is convenient to support multiple architecture (32/64bits) but is not standard (hence the SupportPrecision module).}
 % --------------------------------------------------------------------------------
 \topic{Precision: If you really want to precise the size in bytes (8 bit)}
 \begin{codea}
@@ -570,7 +568,7 @@ use iso_fortran_env
 real(REAL32), real(REAL64)
 integer(INT32), real(INT64)
 \end{codeb}
-\reason{The syntax \texttt{*4} is depreciated. The \cmd{iso_fortran_env} module is not available on old compilers => Use a SupportCompiler module wrapped in a SupportPrecision module. See \cmd{_support/SupportPrecision.f90}} 
+\reason{The syntax \texttt{*4} is depreciated. The \cmd{iso_fortran_env} module is not available on old compilers => Use a SupportCompiler module wrapped in a SupportPrecision module. See \cmd{_support/SupportPrecision.f90} \autoref{fil:precision}} 
 % --------------------------------------------------------------------------------
 \topic{Precision: If you need to communicate with C (recommended for DLLs)}
 \begin{codea}
@@ -589,7 +587,7 @@ integer(C_INT)
 character(kind=C_CHAR)
 logical(C_BOOL)
 \end{codeb}
-\reason{The \cmd{iso_c_binding} module is not available on old compilers => Use a SupportCompiler module wrapped in a SupportPrecision module. See \cmd{_support/SupportPrecision.f90}} 
+\reason{The \cmd{iso_c_binding} module is not available on old compilers => Use a SupportCompiler module wrapped in a SupportPrecision module. See \cmd{_support/SupportPrecision.f90} \autoref{fil:precision}} 
 % --------------------------------------------------------------------------------
 \topic{Precision: use explicit type conversions (with compiler warnings)}
 \begin{codea}
@@ -784,6 +782,42 @@ subroutine init(array1) bind(c,name='init')
 !
 \end{codeb}
 \reason{The above should work with compaq,intel,gcc on windows and linux as long a C preprocessor flag is given to the compilers (i.e. \texttt{-fpp} or \texttt{-cpp}) and as long as the Compaq compiler defines the flag \texttt{-DOLD\_COMPILER}. On linux with gfortran the \texttt{-Wno-attributes} could be use to avoid the warning. }
+
+
+
+
+
+
+
+
+
+
+
+
+% --------------------------------------------------------------------------------
+% ---  
+% --------------------------------------------------------------------------------
+\section{Support files}
+% \topic{Summary}
+\subsection{Compiler (example for intel)}
+\label{fil:compiler}
+\includecode{../_support/SupportCompiler_intel.f90}
+
+
+
+\subsection{Precision}
+\label{fil:precision}
+\includecode{../_support/SupportPrecision.f90}
+
+
+\subsection{Sytem (example for linux)}
+\label{fil:system}
+\includecode{../_support/SupportSystem_linux.f90}
+
+
+\subsection{C Strings}
+\label{fil:cstrings}
+\includecode{../_tools/CStrings.f90}
 
 
 \end{document}

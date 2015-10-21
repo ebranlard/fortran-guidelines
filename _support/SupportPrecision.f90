@@ -26,6 +26,8 @@ contains
         print*,'INT64    ',INT64    
         print*,'REAL32   ',REAL32   
         print*,'REAL64   ',REAL64   
+        print*,'SP       ',kind(1e0)
+        print*,'DP       ',kind(1d0)
     end subroutine
 
 
@@ -36,7 +38,7 @@ contains
     ! --------------------------------------------------------------------------------
     logical function precision_equal(x,y) result(b)
         real(MK), intent(in) :: x,y
-        b=.not.( abs(x -y) >precision(0.0_MK )
+        b=.not.precision_different(x,y)
     end function
 
     logical function precision_different(x,y) result(b)
@@ -49,7 +51,7 @@ contains
     ! --------------------------------------------------------------------------------
     logical function precision_equal_dp(x,y) result(b)
         real(DP), intent(in) :: x,y
-        b=.not.( abs(x -y) >precision(0.0_MK )
+        b=.not.precision_different_dp(x,y)
     end function
 
     logical function precision_different_dp(x,y) result(b)
@@ -62,7 +64,7 @@ contains
     ! --------------------------------------------------------------------------------
     logical function precision_equal_sp(x,y) result(b)
         real(SP), intent(in) :: x,y
-        b=.not.( abs(x -y) >precision(0.0_MK )
+        b=.not.precision_different_sp(x,y)
     end function
 
     logical function precision_different_sp(x,y) result(b)
