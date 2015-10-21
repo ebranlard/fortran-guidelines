@@ -220,16 +220,16 @@ endif
     # DEBUG
 # FFLAGS=/nologo /debug:full /Od /warn:interfaces /module:".\\" /object:".\\" /Fd"vc100.pdb" /traceback /check:bounds /libs:dll /threads /dbglibs /Qmkl:sequential 
 # RELEASE
-# LFLAGS_DLL=/NOLOGO /SUBSYSTEM:WINDOWS /DLL  /OUT:"test.dll" 
-# LFLAGS_DLL=/INCREMENTAL:NO /NOLOGO /MANIFEST /MANIFESTFILE:"raccoon.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"test.pdb" /SUBSYSTEM:WINDOWS /IMPLIB:"test.lib" /DLL  /OUT:"test.dll" 
+# LDFLAGS_DLL=/NOLOGO /SUBSYSTEM:WINDOWS /DLL  /OUT:"test.dll" 
+# LDFLAGS_DLL=/INCREMENTAL:NO /NOLOGO /MANIFEST /MANIFESTFILE:"raccoon.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"test.pdb" /SUBSYSTEM:WINDOWS /IMPLIB:"test.lib" /DLL  /OUT:"test.dll" 
 # FFLAGS=/nologo /O3 /module:".\\" /object:".\\"  /traceback /libs:dll /threads /dbglibs /Qmkl:sequential 
 # FFLAGS=/nologo /O3 /module:".\\" /object:".\\"  /traceback /libs:dll                   /Qmkl:sequential 
 
 #### ADAPTED FOR OMNIVOR
 # DEBUG
-# LFLAGS_DLL=/OUT:"_lib\windows-ia32\libraccoon.dll" /INCREMENTAL:NO /NOLOGO /LIBPATH:$(LIB_DIR) /MANIFEST /MANIFESTFILE:"_lib\windows-ia32\raccoon.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"_lib\windows-ia32\raccoon.pdb" /SUBSYSTEM:WINDOWS /IMPLIB:"_lib\windows-ia32\raccoon.lib" /DLL 
+# LDFLAGS_DLL=/OUT:"_lib\windows-ia32\libraccoon.dll" /INCREMENTAL:NO /NOLOGO /LIBPATH:$(LIB_DIR) /MANIFEST /MANIFESTFILE:"_lib\windows-ia32\raccoon.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"_lib\windows-ia32\raccoon.pdb" /SUBSYSTEM:WINDOWS /IMPLIB:"_lib\windows-ia32\raccoon.lib" /DLL 
 # RELEASE
-# LFLAGS=/OUT:"raccoon.dll" /NOLOGO /MANIFEST /MANIFESTFILE:"raccoon.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /SUBSYSTEM:WINDOWS /IMPLIB:"raccoon.lib" /DLL
+# LDFLAGS=/OUT:"raccoon.dll" /NOLOGO /MANIFEST /MANIFESTFILE:"raccoon.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /SUBSYSTEM:WINDOWS /IMPLIB:"raccoon.lib" /DLL
 #  /OUT:"hawc2mb.exe" /INCREMENTAL:NO /NOLOGO /MANIFEST /MANIFESTFILE:"F:\Exchange\hawc2mb\hawc2mb\Release\hawc2mb.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /SUBSYSTEM:CONSOLE /IMPLIB:"hawc2mb.lib" 
 #### ORIGINALS
   # ORIGINALS
@@ -244,25 +244,28 @@ endif
 
 ifeq ($(OSNAME),linux) 
     ifeq ($(LIB_ACCELERATOR),2)
-        LFLAGS_MKL = -llapack
+        LDFLAGS_MKL = 
+        LIBS_MKL    = -llapack
     else
-        LFLAGS_MKL = -L$(MKL_DIR) -Wl,-R/$(MKL_DIR) $(MKL_INTERF) $(MKL_THREAD) $(MKL_COMPUT) $(MKL_RUNTIME) 
+        LDFLAGS_MKL = -Wl,-R/$(MKL_DIR)
+        LIBS_MKL    = -L$(MKL_DIR) $(MKL_INTERF) $(MKL_THREAD) $(MKL_COMPUT) $(MKL_RUNTIME) 
     endif
 
-    LFLAGS_DLL= 
+    LDFLAGS_DLL= $(LDFLAGS_MKL)
 endif
 ifeq ($(OSNAME),windows) 
     ifeq ($(FCOMPILER),1)
 	    # DEBUG:
-        #LFLAGS =/nologo /SUBSYSTEM:WINDOWS /INCREMENTAL:NO 
+        #LDFLAGS =/nologo /SUBSYSTEM:WINDOWS /INCREMENTAL:NO 
 	    # RELEASE:
-        LFLAGS_MKL  =/nologo /SUBSYSTEM:CONSOLE -threads -dbglibs /Qmkl:sequential    
-        LFLAGS_DLL  =/DLL /OUT:
+        LDFLAGS_MKL  =/nologo /SUBSYSTEM:CONSOLE -threads -dbglibs    
+        LIBS_MKL     =/Qmkl:sequential 
+        LDFLAGS_DLL  =/DLL /OUT:
 	# if threaded, IO might fail, but seem ok with dbglibs. Otherwise het rid of IO, or threads. 
     #FFLAGS+=/threads /dbglibs
     else
-        LFLAGS = NOT_SET
-        LFLAGS_DLL = NOT_SET
+        LDFLAGS = NOT_SET
+        LDFLAGS_DLL = NOT_SET
     endif
 endif
 

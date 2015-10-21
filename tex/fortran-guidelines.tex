@@ -630,13 +630,45 @@ y = real(x, MPI_DOUBLE) ! explicit conversion
 % --------------------------------------------------------------------------------
 % --- OS
 % --------------------------------------------------------------------------------
-\subsection{Operating System}
+\subsection{Operating System and filesystem}
 \label{sec:os}
 A lot of fortran builtin routines are cross-platform. 
 The main problems can be found when creating directories and inquiring about files.
 Compilers have some non-standards extensions. Cross platform solutions can easily be implemented.
 The solution advised here is to put OS-specific parameters (like commands, and slash) in a module \cmd{SupportSystem} (see folder \cmd{_support}) which is then included by a \cmd{FileSystem} module (in folder \cmd{_tools}).
 
+
+\topic{Checking if a file exist: do not use stat, it's not standard, use the old inquire}
+
+\begin{codea}
+integer :: iFileExist
+iFileExist=stat(filename,info_array)
+if (iFileExist/=0) then
+ ! file does not exist
+else
+  ! file exists
+endif
+
+
+
+
+!
+\end{codea} 
+\begin{codeb}
+logical :: bFileExist
+inquire(file=filename, exist=bFileExist)
+if (.not.bFileExist) then
+ ! file does not exist
+else
+  ! file exists
+endif
+ 
+! Or even better: use a wrapped function
+use FileSystem, only: file_exists !see  _tools
+if(.not.file_exists(filename)) then
+! [..]
+
+\end{codeb}
 
 % --------------------------------------------------------------------------------
 % --- Makefile
