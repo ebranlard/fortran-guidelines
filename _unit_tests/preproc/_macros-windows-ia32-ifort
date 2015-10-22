@@ -1,0 +1,37 @@
+ifort: command line warning #10006: ignoring unknown option '/dryrun'
+C:\PROGRA~1\Intel\COMPOS~1\bin\ia32\fpp  \
+    -D__INTEL_COMPILER=1200 \
+    -D_M_IX86=700 \
+    -D_MSC_VER=1600 \
+    -D_MSC_FULL_VER=160030319 \
+    -D_MSC_EXTENSIONS \
+    -D_USE_ATTRIBUTES_FOR_SAL=0 \
+    -DSAL_NO_ATTRIBUTE_DECLARATIONS \
+    -D_MT \
+    -D_WIN32 \
+    -D__INTEL_COMPILER_BUILD_DATE=20110719 \
+    -D_INTEGRAL_MAX_BITS=64 \
+    -D__SSE2__ \
+    -D__SSE__ \
+    -I. \
+    -IC:\PROGRA~1\Intel\COMPOS~1\compiler\include\ia32 \
+    "-IC:\Program Files\Intel\ComposerXE-2011\compiler\include" \
+    "-IC:\Program Files\Intel\ComposerXE-2011\compiler\include\ia32" \
+    "-IC:\Program Files\Microsoft Visual Studio 10.0\VC\INCLUDE" \
+    "-IC:\Program Files\Microsoft Visual Studio 10.0\VC\ATLMFC\INCLUDE" \
+    "-IC:\Program Files\Microsoft SDKs\Windows\v7.0A\include" \
+    "-IC:\Program Files\Intel\ComposerXE-2011\mkl\include" \
+    "-IC:\Program Files\Microsoft Visual Studio 10.0\VC\INCLUDE" \
+    "-IC:\Program Files\Microsoft Visual Studio 10.0\VC\ATLMFC\INCLUDE" \
+    "-IC:\Program Files\Microsoft SDKs\Windows\v7.0A\include" \
+    "-IC:\Program Files\Microsoft Visual Studio\DF98\IMSL\INCLUDE" \
+    "-IC:\Program Files\Microsoft Visual Studio\DF98\INCLUDE" \
+    "-IC:\Program Files\Microsoft Visual Studio\VC98\INCLUDE" \
+    -free \
+    -4Ycpp \
+    -4Ncvf \
+    -f_com=yes \
+    empty.f90
+
+del C:\DOCUME~1\manu\LOCALS~1\Temp\18602arg
+

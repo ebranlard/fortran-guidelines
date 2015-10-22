@@ -1,8 +1,12 @@
 f=f90
 
+FCOMPILERDEF=
 # INTEL FORTRAN COMPILER
 ifeq ($(FCOMPILER),1)
     FC         = ifort
+    FCOMPILERDEF=-D__INTEL_COMPILER
+    FOUT_EXE   = -o
+    FOUT_OBJ   = -o
     FFNOLOGO   = -nologo
     FFFREE     = -free
     FFOPT0     = -O0
@@ -12,6 +16,7 @@ ifeq ($(FCOMPILER),1)
     FFACC      = #-offload-build #-no-offload
     FFOPENMP   = -openmp
     FFWARN     = -warn all
+    FFWARNERROR= -warn error
     FFWARNEXTRA= 
     FFDEBUGINFO= -g
     FFDEBUG    = -check bounds -check format -check output_conversion -check pointers -check uninit -debug full -gen-interface
@@ -29,6 +34,8 @@ ifeq ($(FCOMPILER),1)
     FFBYTERECL = -assume byterecl
     FFSAVE     = -save
 ifeq ($(OSNAME),windows)
+    FOUT_EXE   = /exe:
+    FOUT_OBJ   = /obj:
     FFOPT0     = -O0
     FFOPTO5    = -O3
     FFOPENMP   = -Qopenmp
@@ -53,6 +60,9 @@ ifeq ($(FCOMPILER),0)
 #  -Warray-temporaries -Wcharacter-truncation:
 #     FC		   = gfortran-4.8
     FC		   = gfortran
+    FCOMPILERDEF=-D__GFORTRAN__
+    FOUT_EXE   = -o
+    FOUT_OBJ   = -o
     FFNOLOGO   = 
     FFFREE     = -free 
     FFOPT      = -O3
@@ -82,6 +92,9 @@ endif
 # SUN COMPILER
 ifeq ($(FCOMPILER),2)
     FC		   = f95
+    FCOMPILERDEF=-DSUN_NOT_DEF
+    FOUT_EXE   = -o
+    FOUT_OBJ   = -o
     FFFREE     = -free
     FFNOLOGO   = 
     FFOPT      = -O3
@@ -94,6 +107,43 @@ ifeq ($(FCOMPILER),2)
     FFFPP      = -xpp
 #  FFLAGS    = -xopenmp=noopt
 endif
+
+
+# COMPAQ COMPILER
+ifeq ($(FCOMPILER),2)
+    FC		   =f90
+    FCOMPILERDEF=-D_DF_VERSION_
+    FOUT_EXE   = /exe:
+    FOUT_OBJ   = /obj:
+    FFNOLOGO   = -nologo
+    FFFREE     = -free
+    FFOPT0     = -O0
+    FFOPT      = -O3
+    FFOPTO3    = -O3
+    FFOPTO5    = -O5
+    FFACC      = #-offload-build #-no-offload
+    FFOPENMP   = -openmp
+    FFWARN     = -warn:all
+    FFWARNEXTRA= 
+    FFDEBUG    = -check:bounds -check:format -check:output_conversion -check:pointers -check:uninit -debug:full -gen-interface
+    FFDEBUGINFO=
+    FFPE       = -fpe0 
+    FFDEBUGARG = -check arg_temp_created
+    FFMODINC   = -module 
+    FFAUTOPAR  = -parallel -par-report1
+    FFFPP      = -fpp
+    FFF90      = -assume:realloc_lhs -stand f90
+    FFF95      = -assume:realloc_lhs -stand f95
+    FFF03      = -assume:realloc_lhs -stand f03
+    FFTRACE    = -traceback
+    FFBYTERECL = -assume byterecl
+    FFDLL      = -fPIC
+    FFDLL      = /libs:dll 
+    FFSAVE     = /Qsave
+#      FFDLL      = /iface:stdcall 
+endif
+
+
 
 
 # --------------------------------------------------------------------------------
@@ -244,11 +294,11 @@ endif
 
 ifeq ($(OSNAME),linux) 
     ifeq ($(LIB_ACCELERATOR),2)
-        LDFLAGS_MKL = 
-        LIBS_MKL    = -llapack
+        LDFLAGS_MKL += 
+        LIBS_MKL    += -llapack
     else
-        LDFLAGS_MKL = -Wl,-R/$(MKL_DIR)
-        LIBS_MKL    = -L$(MKL_DIR) $(MKL_INTERF) $(MKL_THREAD) $(MKL_COMPUT) $(MKL_RUNTIME) 
+        LDFLAGS_MKL += -Wl,-R/$(MKL_DIR)
+        LIBS_MKL    += -L$(MKL_DIR) $(MKL_INTERF) $(MKL_THREAD) $(MKL_COMPUT) $(MKL_RUNTIME) 
     endif
 
     LDFLAGS_DLL= $(LDFLAGS_MKL)
@@ -264,8 +314,9 @@ ifeq ($(OSNAME),windows)
 	# if threaded, IO might fail, but seem ok with dbglibs. Otherwise het rid of IO, or threads. 
     #FFLAGS+=/threads /dbglibs
     else
-        LDFLAGS = NOT_SET
-        LDFLAGS_DLL = NOT_SET
+        LDFLAGS_MKL += NOT_SET_WINDOWS_NOT_IFORT
+        LDFLAGS_DLL += NOT_SET_WINDOWS_NOT_IFORT
+        LIBS_MKL    += NOT_SET_WINDOWS_NOT_IFORT
     endif
 endif
 

@@ -841,8 +841,40 @@ subroutine init(array1) bind(c,name='init')
 
 
 
+% --------------------------------------------------------------------------------
+% ---  
+% --------------------------------------------------------------------------------
+\section{Compilers}
+Preprocessor directives defined by compilers to identify themselves (see \cmd{_unit_tests/preproc}): 
+\cmd{__INTEL_COMPILER},
+\cmd{__GFORTRAN__},
+\cmd{_DF_VERSION_}
+% Note: \cmd{_DF_VERSION_} is also present with intel compiler..=> Use a user defined \cmd{-DCOMPAQ} directive!
 
 
+\topic{Compaq}
+Setup the path:\\
+\cmd{call dfvars.bat}  (32 bits)\\
+The script is likely located in:\\
+\cmd{C:\Program Files\Microsoft Visual Studio\Df98\BIN}
+
+If you see messages like ``cannot find dfort.lib'' then you probably didnt run dfvars.bat.\\
+If you see messages like ``LINK: fatal error .. /ignore:505'' then you probably didnt run dfvars.bat.
+
+
+\topic{Visual studio C compiler}
+Setup the path:\\
+\cmd{call vcvarsall.bat x86} (32bit)\\
+\cmd{call vcvarsall.bat amd64} (64 bits)\\
+The script is likely located in:\\
+\cmd{C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC}
+
+\topic{Intel fortran}
+Setup the path:\\
+\cmd{call ifortvars.bat ia32 vs2010} (32 bits) \\
+\cmd{call ifortvars.bat intel64 vs2010} (64 bits) \\
+The script is likely located in:\\
+\cmd{C:\Program Files (x86)\Intel\ComposerXE-2011\bin}
 
 
 % --------------------------------------------------------------------------------

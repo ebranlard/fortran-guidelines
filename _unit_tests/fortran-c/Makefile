@@ -1,15 +1,62 @@
-CCOMPILER=0
-
+# --------------------------------------------------------------------------------
+# --- Defining OS and Archi
+# --------------------------------------------------------------------------------
 include ../../_mkf/MakefileOS.mk
+
+# --------------------------------------------------------------------------------
+# --- Directories
+# --------------------------------------------------------------------------------
+OBJ_DIR_BASE=../../_build
+LIB_DIR_BASE=../../_lib
+
+# --------------------------------------------------------------------------------
+# --- Setup Compilers
+# --------------------------------------------------------------------------------
+ifeq ($(RELEASE),)
+    RELEASE=1
+endif
+ifeq ($(FCOMPILER),)
+    ifeq ($(OSNAME),windows)
+        FCOMPILER=1
+    else
+        FCOMPILER=1
+    endif
+endif
+ifeq ($(CCOMPILER),)
+    ifeq ($(OSNAME),windows)
+        CCOMPILER=2
+    else
+        CCOMPILER=1
+    endif
+endif
+
+# --- Generic COMPILERS Makefiles
 include ../../_mkf/MakefileC.mk
+include ../../_mkf/MakefileFortran.mk
+
+CFLAGS=
+FFLAGS=$(FFNOLOGO)
+DEFS=
+INCS=
+LIBS=
+
+# --------------------------------------------------------------------------------
+# --- Setup Support
+# --------------------------------------------------------------------------------
+include ../../_mkf/MakefileSupport.mk
 
 
-TESTFILES     =$(wildcard *.$(f)) $(wildcard *.$(c))
-TESTPROGS     =$(patsubst %.$(f),%,      $(TESTFILES) ) $(patsubst %.$(c),%,      $(TESTFILES) )
-RULES_COMPILE =$(patsubst %.$(f),comp-%, $(TESTFILES) )
-RULES_RUN     =$(patsubst %,run-%,  $(TESTFILES) )
-RULES_CLEAN   =$(patsubst %,clean-%, $(TESTFILES) )
 
+
+# --------------------------------------------------------------------------------
+# ---  General Rules
+# --------------------------------------------------------------------------------
+TESTFILES_F   =$(wildcard *.$(f))
+TESTFILES_C   =$(wildcard *.$(c))
+TESTPROGS     =$(patsubst %.$(f),%, $(TESTFILES_F) ) $(patsubst %.$(c),%,$(TESTFILES_C) )
+RULES_COMPILE =$(patsubst %,comp-%,  $(TESTPROGS) )
+RULES_RUN     =$(patsubst %,run-%,   $(TESTPROGS) )
+RULES_CLEAN   =$(patsubst %,clean-%, $(TESTPROGS) )
 
 all:  compile run clean
 	
@@ -19,36 +66,27 @@ run:   $(RULES_RUN)
 	
 clean:$(RULES_CLEAN)
 
-# all: compile tests clean
-# 
-# compile:
-# 	@$(CC) test_c_precision.c -o test_c_precision
-# 
-# 
-# tests:
-# 	@./test_c_precision
-# 
-# clean:
-# 	@$(RM) test_c_precision
-
 # C Compilation
-comp-%: %.$(f)
-	@$(CC) $(DEFS) $(INCS) $(CFLAGS) $(LDFLAGS) $*.$(c) $(LIBS) -o $*
+comp-%: %.$(c)
+	@$(CC) $(DEFS) $(INCS) $(CFLAGS) $(LDFLAGS) $*.$(c) $(LIBS) $(COUT)$*
 # Fortran Compilation
 comp-%: %.$(f)
-	@$(FC) $(DEFS) $(INCS) $(FFLAGS) $(LDFLAGS) -I$(OBJ_DIR) $*.$(f) $(LIBS) -o $* 
+	@$(FC) $(DEFS) $(INCS) $(FFLAGS) $(LDFLAGS) $*.$(f) $(LIBS) $(FOUT_EXE)$* 
 
 # Run requires compilation
 run-%: comp-%
-	@echo $(SUPPORT) $*
-	./$*
+	@echo "> Running test ($(SUPPORT))" $*
+	@./$*
 
 clean-%: 
-	@$(RM) $*
+	@$(RM) $*$(EXE) *.$(o)
 
 echo:
 	@echo "RULES_RUN: " $(RULES_RUN)
 	@echo "TESTPROGS: " $(TESTPROGS)
-	@echo "TESTFILES: " $(TESTFILES)
+	@echo "TESTFILES: " $(TESTFILES_F) $(TESTFILES_C)
 
+# --------------------------------------------------------------------------------
+# --- Setup some easy rules
+# --------------------------------------------------------------------------------
 include ../../_mkf/MakefileSimpleRules.mk

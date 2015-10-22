@@ -23,11 +23,11 @@ ifeq ($(OS),Windows_NT)
     endif
 
 
- 	# Object file extension
+    # File Extensions
     o=obj
     lib=lib
     dll=dll
-	#
+    EXE=.exe
 
 else
     UNAME_S := $(shell uname -s)
@@ -55,10 +55,11 @@ else
         OSDEF := $(OSDEF)
     endif
  
- 	# Object file extension
+    # File Extensions
     o=o
     lib=a
     dll=so
+    EXE=
 
 endif
 

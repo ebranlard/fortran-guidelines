@@ -2,71 +2,89 @@
 # --- Defining OS and Archi
 # --------------------------------------------------------------------------------
 include ../../_mkf/MakefileOS.mk
+
 # --------------------------------------------------------------------------------
-# --- Makefile flags
+# --- Directories
+# --------------------------------------------------------------------------------
+OBJ_DIR_BASE=../../_build
+LIB_DIR_BASE=../../_lib
+
+# --------------------------------------------------------------------------------
+# --- Setup Compilers
 # --------------------------------------------------------------------------------
 ifeq ($(RELEASE),)
     RELEASE=1
 endif
 ifeq ($(FCOMPILER),)
     ifeq ($(OSNAME),windows)
-        FCOMPILER=2
+        FCOMPILER=1
     else
         FCOMPILER=1
     endif
 endif
-# --------------------------------------------------------------------------------
-# --- Setup Fortran Compiler
-# --------------------------------------------------------------------------------
+ifeq ($(CCOMPILER),)
+    ifeq ($(OSNAME),windows)
+        CCOMPILER=2
+    else
+        CCOMPILER=1
+    endif
+endif
+# --- Generic COMPILERS Makefiles
+include ../../_mkf/MakefileC.mk
 include ../../_mkf/MakefileFortran.mk
-
-#FFLAGS= $(FFNOLOGO) $(FFFPP)
-FFLAGS= $(FFNOLOGO)
+CFLAGS=
+FFLAGS= $(FFNOLOGO) $(FFFPP)
+#FFLAGS= $(FFNOLOGO)
 LDFLAGS=
-#DEFS= $(OSDEF) -D__MYMACRO__
+#DEFS= $(FCOMPILERDEF)     $(OSDEF) -D__MYMACRO__
+DEFS= $(FCOMPILERDEF) $(OSDEF) -D__MYMACRO__
+#DEFS= $(FCOMPILERDEF) $(OSDEF)
 #DEFS=-D__MYMACRO__
+#DEFS=
+INCS=
+LIBS=
 # --------------------------------------------------------------------------------
-# --- Setup Flags and support
+# --- Setup Support
 # --------------------------------------------------------------------------------
 include ../../_mkf/MakefileSupport.mk
 
 # --------------------------------------------------------------------------------
-# ---  
-# --------------------------------------------------------------------------------
-# include $(OMNIVOR_MKF_DIR)MakefileInc.mk
-# Params
-# LIB_DIR := $(OMNIVOR_LIB_DIR)
-# OBJ_DIR := $(OMNIVOR_OBJ_DIR)
-# ALLOBJ   =$(wildcard $(OBJ_DIR)/*.o)
-
-TESTFILES     =$(wildcard *.$(f))
-TESTPROGS     =$(patsubst %.$(f),%$(EXE),      $(TESTFILES) )
-
-# --------------------------------------------------------------------------------
 # ---  General Rules
 # --------------------------------------------------------------------------------
+TESTFILES_F   = test_preproc.f90
+# TESTFILES_F   =$(wildcard *.$(f))
+TESTFILES_C   =$(wildcard *.$(c))
+TESTPROGS     =$(patsubst %.$(f),%, $(TESTFILES_F) ) $(patsubst %.$(c),%,$(TESTFILES_C) )
+RULES_COMPILE =$(patsubst %,comp-%,  $(TESTPROGS) )
+RULES_RUN     =$(patsubst %,run-%,   $(TESTPROGS) )
+RULES_CLEAN   =$(patsubst %,clean-%, $(TESTPROGS) )
 
-# all: clean run-test_hills_yaps
-all: test1 clean
-#    	unittest
+all:  compile run clean
 
-# Compilation
-test1: test_preproc.$(f)
-	@$(FC) $(DEFS) $(FFLAGS) $(LDFLAGS) test_preproc.$(f) $(FOUTEXE)test_preproc$(EXE)
-	@echo "$(SUPPORT) $^"
-	@./test_preproc
+compile: $(RULES_COMPILE)
 
-clean:
-	@$(RM) $(TESTPROGS) *.vtk *.txt
+run:   $(RULES_RUN) 
+	
+clean:$(RULES_CLEAN)
 
+# C Compilation
+comp-%: %.$(c)
+	@$(CC) $(DEFS) $(INCS) $(CFLAGS) $(LDFLAGS) $*.$(c) $(LIBS) $(COUT)$*
+# Fortran Compilation
+comp-%: %.$(f)
+	@$(FC) $(DEFS) $(INCS) $(FFLAGS) $(LDFLAGS) $*.$(f) $(LIBS) $(FOUT_EXE)$* 
 
+# Run requires compilation
+run-%: comp-%
+	@echo "> Running test ($(SUPPORT))" $*
+	@./$*
+
+clean-%: 
+	@$(RM) $*$(EXE) *.$(o)
 echo:
-	@echo "ALL OBJ  : " $(ALLOBJ)
-	@echo "LIB_DIR  : " $(LIB_DIR)
-	@echo "OBJ_DIR  : " $(LIB_DIR)
-	@echo "RULES    : " $(RULES_COMPILE) $(RULES_RUN)
+	@echo "RULES_RUN: " $(RULES_RUN)
 	@echo "TESTPROGS: " $(TESTPROGS)
-	@echo "TESTFILES: " $(TESTFILES)
+	@echo "TESTFILES: " $(TESTFILES_F) $(TESTFILES_C)
 
 # --------------------------------------------------------------------------------
 # --- Setup some easy rules

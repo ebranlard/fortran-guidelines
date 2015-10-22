@@ -3,10 +3,12 @@
 # --- Defining subdirectories and rule names 
 # --------------------------------------------------------------------------------
 # Subdirectories with rule suffix
-SUBDIRS  = $(shell find . -maxdepth 1 -mindepth 1 -type d)
+#SUBDIRS  = $(shell find . -maxdepth 1 -mindepth 1 -type d)
+SUBDIRS = ${sort ${dir ${wildcard ./*/*/}}}
 SUBCLEAN = $(addsuffix .clean,$(SUBDIRS))
 SUBALL   = $(addsuffix .all,$(SUBDIRS))
 SUBTESTS  = $(addsuffix .tests,$(SUBDIRS))
+
 
 # --------------------------------------------------------------------------------
 # --- General rules 
