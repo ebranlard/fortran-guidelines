@@ -9,32 +9,22 @@ ifeq ($(RELEASE),)
     RELEASE=1
 endif
 ifeq ($(FCOMPILER),)
-    FCOMPILER=1
+    ifeq ($(OSNAME),windows)
+        FCOMPILER=2
+    else
+        FCOMPILER=1
+    endif
 endif
-
-LIB_NAME_BASE=
-OBJ_DIR_BASE=../../_build
-LIB_DIR_BASE=../../_lib
-
-# C Preprocessor
-FFLAGS_EXTRA+=$(FFFPP)
-
-ifeq ($(FCOMPILER),1)
-FFLAGS_EXTRA=-threads -fpp
-endif
-ifeq ($(FCOMPILER),0)
-FFLAGS_EXTRA=-cpp  -Wno-attributes
-endif
-AFLAGS_EXTRA=
-
-MAKE_STATIC=0
-MAKE_DLL=1
-
 # --------------------------------------------------------------------------------
 # --- Setup Fortran Compiler
 # --------------------------------------------------------------------------------
 include ../../_mkf/MakefileFortran.mk
 
+#FFLAGS= $(FFNOLOGO) $(FFFPP)
+FFLAGS= $(FFNOLOGO)
+LDFLAGS=
+#DEFS= $(OSDEF) -D__MYMACRO__
+#DEFS=-D__MYMACRO__
 # --------------------------------------------------------------------------------
 # --- Setup Flags and support
 # --------------------------------------------------------------------------------
@@ -50,7 +40,7 @@ include ../../_mkf/MakefileSupport.mk
 # ALLOBJ   =$(wildcard $(OBJ_DIR)/*.o)
 
 TESTFILES     =$(wildcard *.$(f))
-TESTPROGS     =$(patsubst %.$(f),%,      $(TESTFILES) )
+TESTPROGS     =$(patsubst %.$(f),%$(EXE),      $(TESTFILES) )
 
 # --------------------------------------------------------------------------------
 # ---  General Rules
@@ -62,12 +52,12 @@ all: test1 clean
 
 # Compilation
 test1: test_preproc.$(f)
-	@$(FC) $(FFLAGS) $(LDFLAGS) -I$(OBJ_DIR) test_preproc.$(f)  -o test_preproc $(ALLOBJ)
+	@$(FC) $(DEFS) $(FFLAGS) $(LDFLAGS) test_preproc.$(f) $(FOUTEXE)test_preproc$(EXE)
 	@echo "$(SUPPORT) $^"
 	@./test_preproc
 
 clean:
-	@rm -rf $(TESTPROGS) *.vtk *.txt
+	@$(RM) $(TESTPROGS) *.vtk *.txt
 
 
 echo:

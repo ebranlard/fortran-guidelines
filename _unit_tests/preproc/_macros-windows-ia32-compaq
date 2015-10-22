@@ -1,0 +1,56 @@
+
+# --------------------------------------------------------------------------------
+# ---  Note:
+# --------------------------------------------------------------------------------
+When using dec directive, the follwoing can be used to detect compaq:
+_DF_VERSION_
+
+But when using the cpreprocessor, this is not defined, so it's best to explicitly define it!
+
+
+
+
+
+# --------------------------------------------------------------------------------
+# ---  
+# --------------------------------------------------------------------------------
+When only using the Fortran preprocessor FPP, to request that symbol values
+defined by /define apply only to FPP and are not seen by compiler directives,
+also specify /nodefine on the DF command line.
+In the visual development environment, specify the Predefined Preprocessor
+Symbols in the General or Preprocessor Compiler Option Category.
+You can use the directives to detect symbol definitions, such as the IF Directive
+Construct. Like certain other compiler options, an equivalent directive exists
+(DEFINE directive).
+The following preprocessor symbols are predefined by the compiler system and
+are available to compiler directives and FPP (except _DF_VERSION_ and
+_VF_VERSION_):
+Predefined Preprocessor Symbols
+Predefined Symbol Name
+and Value Conditions When this Symbol is Defined
+_DF_VERSION_=660 (660 for
+Version 6.6) Compiler only
+_DLL=1 Only if /libs:dll, /MDs, /MD, /dll, or /LD is
+specified, but not when /libs:static is
+specified
+_INTEGRAL_MAX_BITS=32 Only for ia32 (32-bit) systems
+_INTEGRAL_MAX_BITS=64 Only for ia64 (64-bit) systemsCompiler and Linker Options
+Page 35 of 130
+_ITANIUM_A3_=1 Only for ia64 (64-bit) systems
+_MSFORTRAN_=401 Only if /fpscomp:symbols is specified or you
+use the FL32 command
+_MT=1 Only if /threads or /MT is specified
+_M_IX86=500 Only for ia32 (32-bit) systems
+_M_IA64=64100 Only for ia64 (64-bit) systems
+_VF_VERSION_=660 (660 for
+Version 6.6) Compiler only
+_WIN32=1 Always defined (both ia32 and ia64
+systems)
+_WIN64=1 Only for ia64 (64-bit) systems
+_WIN95=1 Only for ia32 (32-bit) systems running the
+Windows 95 operating system
+_WIN98=1 Only for ia32 (32-bit) systems running the
+Windows 98 operating system
+_WINME=1 Only for ia32 (32-bit) systems running the
+Windows Me operating system
+_X86_=1 Only for ia32 (32-bit) systems
