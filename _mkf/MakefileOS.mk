@@ -77,8 +77,10 @@ ifeq ($(OS),Windows_NT)
     TOUCH=echo.>
     MKDEPF=makedepf90.exe
     SHELL=cmd.exe
-    LINK=link.exe
-    ARCHIVER=Lib
+    LD=link.exe
+    LD_OUT=/out:
+    LD_DLL=/nologo /dll
+    AR=Lib
     CAT=type
     ECHOSAFE=echo(
 else
@@ -91,8 +93,10 @@ else
     TOUCH=touch
     MKDEPF=makedepf90
     SHELL=/bin/bash
-    LINK=LD
-    ARCHIVER=ar
+    LD=LD
+    LD_OUT=-o
+    LD_DLL=
+    AR=ar
     CAT=cat
     ECHOSAFE=echo 
 endif

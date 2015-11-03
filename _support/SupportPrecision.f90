@@ -1,8 +1,9 @@
 module SupportPrecision
     ! Compiler interface to iso_c_binding
-    use SupportCompiler, only: C_FLOAT, C_DOUBLE, C_CHAR, C_INT, C_BOOL
+    use SupportISO, only: C_FLOAT, C_DOUBLE, C_CHAR, C_INT, C_BOOL
+    use SupportISO, only: C_INTPTR_T, C_NULL_FUNPTR
     ! Compiler interface to iso_fortran_env
-    use SupportCompiler, only: REAL32, REAL64, INT32, INT64
+    use SupportISO, only: REAL32, REAL64, INT32, INT64
     ! Compiler interface to int_ptr_kind
     use SupportCompiler, only: IPTRK
     !
@@ -17,19 +18,21 @@ contains
     ! ---  
     ! --------------------------------------------------------------------------------
     subroutine print_precision_kinds()
-        print*,'C_INT    ',C_INT    
-        print*,'C_FLOAT  ',C_FLOAT  
-        print*,'C_DOUBLE ',C_DOUBLE 
-        print*,'C_CHAR   ',C_CHAR   
-        print*,'C_BOOL   ',C_BOOL   
-        print*,'INT32    ',INT32    
-        print*,'INT64    ',INT64    
-        print*,'REAL32   ',REAL32   
-        print*,'REAL64   ',REAL64   
-        print*,'SP       ',kind(1e0)
-        print*,'DP       ',kind(1d0)
+        print*,'C_INT       ',C_INT    
+        print*,'C_FLOAT     ',C_FLOAT  
+        print*,'C_DOUBLE    ',C_DOUBLE 
+        print*,'C_CHAR      ',C_CHAR   
+        print*,'C_BOOL      ',C_BOOL   
+        print*,'INT32       ',INT32    
+        print*,'INT64       ',INT64    
+        print*,'REAL32      ',REAL32   
+        print*,'REAL64      ',REAL64   
+        print*,'SP          ',kind(1e0)
+        print*,'DP          ',kind(1d0)
+        print*,'C_INTPTR_T  ',C_INTPTR_T
+        print*,'C_NULL_FPTR ',C_NULL_FUNPTR
+        print*,'IPTRK       ',IPTRK
     end subroutine
-
 
 
     ! Below we have functions for MK, DP, SP (no interface is used because redundancy is possible)

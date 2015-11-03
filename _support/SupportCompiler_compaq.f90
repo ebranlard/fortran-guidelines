@@ -1,15 +1,5 @@
 module SupportCompiler
-    ! Builtin types kind
-    integer, parameter :: C_INT    = 4 
-    integer, parameter :: C_FLOAT  = 4
-    integer, parameter :: C_DOUBLE = 8
-    integer, parameter :: C_CHAR   = 1
-    !integer, parameter :: C_BOOL   = 4  ! TODO
-    integer, parameter :: INT32  = 4
-    !integer, parameter :: INT64 = 8 ! TODO
-    integer, parameter :: REAL32 = 4
-    integer, parameter :: REAL64 = 8
-
+    implicit none
     !
     integer, parameter :: IPTRK=int_ptr_kind() !< for pointers
     integer, parameter :: RECORD_LENGTH=1      !< for direct access binaries
@@ -18,5 +8,17 @@ module SupportCompiler
     character(len=ISTR_LEN), parameter :: FORTRAN_COMPILER='compaq'
 
 
+    contains
+        !
+       integer function command_argument_count() result(n)
+           use DFLIB
+           n=NARGS()
+       end function
 
+       subroutine get_command_argument(i,arg) 
+           use DFLIB
+           integer, intent(in) :: i
+           character(len=*), intent(inout) :: arg
+           call getarg(i,arg)
+       end subroutine
 end module
