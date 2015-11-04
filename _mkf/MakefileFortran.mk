@@ -3,7 +3,7 @@ f=f90
 FCOMPILERDEF=
 # INTEL FORTRAN COMPILER
 ifeq ($(FCOMPILER),1)
-    FC         = ifort
+    FC         =ifort
     FCNAME     =intel
     FCOMPILERDEF=-D__INTEL_COMPILER
     FOUT_EXE   = -o
