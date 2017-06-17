@@ -247,7 +247,12 @@ tkz: $(TKZ2PDFS)
 
 version: allpdf dateit
 
-allpdf:  figspdf pdfall
+allpdf: gitversion figspdf pdfall
+
+gitversion:
+	@chmod +x make_version.sh
+	@./make_version.sh
+	@cat tVersion.tex
 
 
 dateit:

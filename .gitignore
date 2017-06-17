@@ -4,3 +4,4 @@
 *.toc
 *.out
 *.gz
+_unit_tests/character_arrays/test_char_array

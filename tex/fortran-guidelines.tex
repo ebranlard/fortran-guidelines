@@ -1,7 +1,9 @@
 \documentclass{article} 
 \input{_preamble.tex}
+\input{tVersion.tex}
+% \renewcommand{\weird}[1]{}
 \title{Some Fortran guidelines and pitfalls}
-\author{E. Branlard}
+\author{E. Branlard - Version: \gitversion}
 % --------------------------------------------------------------------------------
 % --- Document 
 % --------------------------------------------------------------------------------
@@ -13,12 +15,12 @@
 \subsection*{Introduction}
 \paragraph{Portability Portability Portability}
 It is rather easy to write a code that is \textit{none standards, platform-dependent, architecture-dependent, compiler-dependent and library-dependent}.
-Writing a portable code takes more effort on the programmer's level but it has its benefits: robustness, reusablility and more users. You learn a lot and find a lot of bugs simply by using different compilers.
+Writing a portable code takes more effort on the programmer's level but it has its benefits: robustness, re-usability and more users. You learn a lot and find a lot of bugs simply by using different compilers.
 
 \paragraph{Strategies}
 There is probably two main strategies to ensure portability: (i) using preprocessor directives or (ii) wrapping non-portable code in separate files.
 (i) Preprocessors directives are widely used, they are written close to the code which makes them easy to implement. The down side is they pollute the code and make it often very hard to read. Also, there is an inherent dependence on a specific preprocessor, and thus this reduces portability. The C-preprocessor is built-in in most compilers, and is probably the one that should be used if a preprocessor approach is chosen. 
-(ii) Chosing to wrap non-portable code into separate files keeps the whole code perfectly readable. Further, the developpers responsible for a given library, architecture or OS have only a few files to work with, the rest of the code being ``universal''.
+(ii) Choosing to wrap non-portable code into separate files keeps the whole code perfectly readable. Further, the developers responsible for a given library, architecture or OS have only a few files to work with, the rest of the code being ``universal''.
 The down side is that it increases the number of source files and requires the ``Makefile'' or the ``Project'' to select the proper files. 
 Also, not all the power of the preprocessor can be achieved in this way.
 This is for instance the case for decoration of procedures or data like \texttt{bind(C)} or \texttt{DLLEXPORT} (see \autoref{sec:dlls}).
@@ -26,7 +28,7 @@ A combination of both approaches is likely to be the optimal solution.
 
 \paragraph{In this document}
 The guidelines written in this document are an attempt to lean towards portability. The content of the document might evolve in the future.
-Wrapping of non-portable code into a separate module is the solution generally applied in this document. Different files are used to provide the differerent implementations of the interface of a given wrap-module.  Portability modules are called \verb|Support*| and their source code is located in the folder \cmd{_support*}.
+Wrapping of non-portable code into a separate module is the solution generally applied in this document. Different files are used to provide the different implementations of the interface of a given wrap-module.  Portability modules are called \verb|Support*| and their source code is located in the folder \cmd{_support*}.
 For instance, the kind of a real is stored as \verb|MK| in the \verb|SupportPrecision| module (see \autoref{sec:precision}).
 
 If recent standards offer options that helps portability, then this document will tend to favor these options despite the broken compatibility with regards to older compilers. This is the case for the \texttt{bind(C)} decoration which is very helpful for portability.
@@ -55,7 +57,7 @@ They are far from ``universal'' and will hopefully evolve in the future.
 \begin{enumerate}
     \item Non-portable code should be placed in a separate directory to avoid polluting the ``universal'' code.
     \item Modules containing derived types definitions should not contain anything else: no data or routines (though parameters/constants can be fine).  This seriously reduces the chances to run into circular dependencies problems. 
-    \item Modules containing data should only contain this data: no types or routines. This reduces circular dependencies problems. This helps the identification of the data ``stored'' by the librairies. In fact, it's best to reduce data modules to a minimum (see next point).
+    \item Modules containing data should only contain this data: no types or routines. This reduces circular dependencies problems. This helps the identification of the data ``stored'' by the libraries. In fact, it's best to reduce data modules to a minimum (see next point).
     \item Data modules should be avoided. In a ``library''-like implementation, the ``user'' owns the data, not the library. The library is made of tools that manipulate the user's data but does not store anything. This makes the library thread safe and the code implemented can be more readily re-used.
     \item Use one module per files, it makes it easier to find them and reduces circular dependencies problem.
     \item The following structure can be adopted:
@@ -132,7 +134,7 @@ subroutine foo()
   nullify(p) ! safe
 end subroutine 
 \end{codeb}
-\reason{Inializing in the definition implies the attribute \cmd{save}, it's very bad practice and can lead to disastrous surprises (see examples in \cmd{_unit_tests}). Save is in general a bad practice (like global variables). Note: for some reason hawc2-intel is compiled with the -save flag by default!}
+\reason{Finalizing in the definition implies the attribute \cmd{save}, it's very bad practice and can lead to disastrous surprises (see examples in \cmd{_unit_tests}). Save is in general a bad practice (like global variables).}
 % --------------------------------------------------------------------------------
 \topic{Arguments declaration: use intent in declarations, except for pointers}
 \begin{codea}
@@ -164,7 +166,7 @@ allocate(x(1:10));! x is garbage
 \begin{codeb}
 allocate(x(1:10)); x(1:10)= 0.0_MK ! safe
 \end{codeb}
-\reason{Compilers have flags to define the behavior of allocate (e.g. set to 0 or NaN). It's more portable not to rely on it. In statements and declarations, specifying the bounds explicitely is good practice: it reminds the reader of the dimensions, it helps the compiler, and bound mismatch can be found by the compiler.}
+\reason{Compilers have flags to define the behavior of allocate (e.g. set to 0 or NaN). It's more portable not to rely on it. In statements and declarations, specifying the bounds explicitly is good practice: it reminds the reader of the dimensions, it helps the compiler, and bound mismatch can be found by the compiler.}
 % --------------------------------------------------------------------------------
 \topic{Allocations: the safe way}
 \begin{codea}
@@ -286,7 +288,7 @@ if(precision_equal(x,12.0_MK))       ! ex1b
 !
 if(abs(x-12.0_MK)<precision(1.0_MK)) ! ex2
 \end{codeb}
-\reason{In the above, ex1 is allright but not so readable.  Ex1b uses a wrapped function that can be placed e.g. in the \texttt{SupportPrecision} module.
+\reason{In the above, ex1 is alright but not so readable.  Ex1b uses a wrapped function that can be placed e.g. in the \texttt{SupportPrecision} module.
 Ex2 is more ``physical'':  $x$ and $12$ are compared assuming the typical physical scale of the problem is $1$. Indeed, the machine precision for a given real value is different depending on the real kind (here MK) and the absolute value. }
 % --------------------------------------------------------------------------------
 \topic{If-statements: there is no assumed order of evaluation (example here for optional argument)}
@@ -403,7 +405,7 @@ endif
 \end{codeb}
 % --------------------------------------------------------------------------------
 \topic{Derived types: automatic code generation}
-A bit of advertisment here, \cmd{simple-fortran-parser} can generate automatic code for derived types (like read/write to binary, init/dealloc). 
+A bit of advertisement here, \cmd{simple-fortran-parser} can generate automatic code for derived types (like read/write to binary, init/dealloc). 
 
 
 
@@ -795,7 +797,6 @@ endif
 -For C-strings see \autoref{sec:characters} and the file \verb|CStrings.f90|\\
 -For C-types see \autoref{sec:precision}\\
 
-\weird{This section needs a bit more work. Checkout the following repository for canonical examples of dlls: \url{https://gitlab.windenergy.dtu.dk/ebra/hawc2-dll-tests/}}
 
 
 \topic{Procedure names/alias: bind(C) is really convenient, but not supported by Compaq}
