@@ -1,7 +1,7 @@
 \documentclass{article} 
 \input{_preamble.tex}
-\title{Some Fortran guidelines and pitfall}
-\author{https://gitlab.windenergy.dtu.dk/ebra/fortran-guidelines}
+\title{Some Fortran guidelines and pitfalls}
+\author{E. Branlard}
 % --------------------------------------------------------------------------------
 % --- Document 
 % --------------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 \subsection*{Introduction}
 \paragraph{Portability Portability Portability}
 It is rather easy to write a code that is \textit{none standards, platform-dependent, architecture-dependent, compiler-dependent and library-dependent}.
-Writting a portable code takes more effort on the programmer's level but it has its benefits: robustness, reusablility and more users. You learn a lot and find a lot of bugs simply by using different compilers.
+Writing a portable code takes more effort on the programmer's level but it has its benefits: robustness, reusablility and more users. You learn a lot and find a lot of bugs simply by using different compilers.
 
 \paragraph{Strategies}
 There is probably two main strategies to ensure portability: (i) using preprocessor directives or (ii) wrapping non-portable code in separate files.
